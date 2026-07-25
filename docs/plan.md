@@ -93,9 +93,12 @@ ships and the ecosystem (Next.js tooling, typescript-eslint) confirms support.
 - `User.role` (`customer` | `admin`); no self-service admin signup — admin
   role is granted via seed data or an existing admin promoting a user in
   `/admin/users`.
-- `middleware.ts` redirects unauthenticated requests away from
-  `/account/**` and `/admin/**` as a fast path; every admin server action
-  re-checks role server-side regardless (defense in depth, see
+- `proxy.ts` (Next.js 16 renamed `middleware.ts` → `proxy.ts`, still runs as
+  the same conceptual middleware layer) redirects unauthenticated requests
+  away from `/account/**` and `/admin/**` as a fast path, checking only for
+  a session cookie's presence — it cannot see role, so admin authorization
+  is enforced separately; every admin server action re-checks role
+  server-side regardless (defense in depth, see
   [architecture.md §11](architecture.md#11-moduleaccess-boundaries)).
 
 ## 6. Cart

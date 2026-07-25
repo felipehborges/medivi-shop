@@ -40,15 +40,16 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ## Phase 2 — Auth
 
-- [ ] 2.1 Configure Better Auth core (email/password) with Drizzle adapter
-- [ ] 2.2 Add GitHub OAuth provider config
-- [ ] 2.3 Build sign-up page + form (React Hook Form + Zod)
-- [ ] 2.4 Build sign-in page + form
-- [ ] 2.5 Add session-aware header (sign in/out state, user menu)
-- [ ] 2.6 Add `middleware.ts` guarding `/account/**` and `/admin/**`
-- [ ] 2.7 Add `requireAdmin()`/`requireUser()` server-side helpers for use inside every protected server action
-- [ ] 2.8 Tests: sign-up validation errors, sign-in success/failure, session persists across reload, middleware redirect for unauthenticated access
-- **Validation:** can sign up, sign out, sign back in locally; unauthenticated request to `/admin` redirects to sign-in.
+- [x] 2.0 Set up Vitest (not originally its own line item — added as a prerequisite; 1.13's test helper and this phase's task tests need a real runner, and Phase 11 only covers Playwright/CI wiring, not the base unit-test setup)
+- [x] 2.1 Configure Better Auth core (email/password) with Drizzle adapter — schema reconciled against `npx @better-auth/cli generate` (added missing indexes, `$onUpdate` triggers, `NOT NULL` on `verification` timestamps; see migration `0001_reconcile_auth_with_better_auth.sql`)
+- [ ] 2.2 ~~Add GitHub OAuth provider config~~ — **deferred** (2026-07-25): user opted to ship email/password only for now; requires registering a GitHub OAuth App first. Revisit whenever OAuth is wanted — the Better Auth config in `apps/web/lib/auth.ts` takes a provider addition without touching the schema (`account` already has `providerId`/`accessToken`/etc.).
+- [x] 2.3 Build sign-up page + form (React Hook Form + Zod)
+- [x] 2.4 Build sign-in page + form
+- [x] 2.5 Add session-aware header (sign in/out state, user menu)
+- [x] 2.6 Add `proxy.ts` guarding `/account/**` and `/admin/**` — Next.js 16 renamed `middleware.ts` → `proxy.ts` (default export/`proxy` export, Node.js runtime by default now); cookie-presence check only, not full session validation
+- [x] 2.7 Add `requireAdmin()`/`requireUser()` server-side helpers for use inside every protected server action
+- [ ] 2.8 Tests: sign-up validation errors, sign-in success/failure, session persists across reload, proxy redirect for unauthenticated access
+- **Validation:** `pnpm lint && pnpm typecheck && pnpm test && pnpm build` all pass workspace-wide (15 tests: 4 DB-constraint tests in `packages/db` against live Postgres, 11 in `apps/web` incl. real sign-up/sign-in against the live DB, guard-redirect unit tests, and `proxy.ts` cookie-presence tests). Verified live in the browser: sign up, session-aware header swaps to the account menu, sign out, and `curl`-level checks that `/account`/`/admin/*` redirect to `/sign-in` unauthenticated but pass through with a session cookie. Also found and fixed a real production-build bug along the way — `NODE_ENV=development` in `.env` was leaking into `next build` via the `dotenv-cli` wrapper, corrupting React's dev/prod bundle selection (see CLAUDE.md § Environment gotchas).
 
 ## Phase 3 — Product Catalog
 

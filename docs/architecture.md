@@ -19,7 +19,7 @@ medivi-shop/
 │       ├── app/              # routes (public, account, admin, api)
 │       ├── components/       # app-specific composed components
 │       ├── lib/               # server actions, data access wiring, auth config
-│       └── middleware.ts
+│       └── proxy.ts       # Next.js 16 renamed middleware.ts → proxy.ts
 ├── packages/
 │   ├── db/                  # Drizzle schema, migrations, seed script, query helpers
 │   ├── ui/                  # shadcn/ui-based primitives shared by app

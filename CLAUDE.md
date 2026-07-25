@@ -58,6 +58,21 @@ re-derive decisions already made there.
 - Don't add error handling/fallbacks for cases that can't happen. Validate
   at boundaries (user input, webhooks), trust internal code past that point.
 
+## Environment gotchas
+
+- **Never put `NODE_ENV` in `.env`.** `apps/web`'s dev/build/start scripts
+  wrap `next` with `dotenv-cli` pointed at the repo-root `.env` (Next only
+  auto-loads `.env` files from its own app directory, not a monorepo root).
+  If `.env` sets `NODE_ENV=development`, that gets force-injected into
+  `next build` too, which loads development-mode React into a production
+  bundle and fails with a confusing `Cannot read properties of null
+  (reading 'useContext')` error during static generation — not a code bug,
+  an env-loading one. Let each command set `NODE_ENV` itself.
+- Next.js 16 renamed the `middleware.ts` file convention to `proxy.ts`
+  (default/`proxy` named export, Node.js runtime by default now). Docs here
+  still say "middleware" for the concept; the actual file is
+  `apps/web/proxy.ts`.
+
 ## Commands
 
 ```bash

@@ -64,3 +64,5 @@ minimumReleaseAgeExclude:
   - '@radix-ui/react-use-size@1.1.4'
   - '@radix-ui/react-visually-hidden@1.2.11'
   - radix-ui@1.6.7
+  - '@hookform/resolvers@5.4.3'
+  - react-hook-form@7.83.0

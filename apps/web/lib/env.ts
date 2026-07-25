@@ -6,8 +6,6 @@ import { z } from "zod";
  * fails fast at boot with a clear message instead of surfacing as a
  * confusing runtime error deep in a provider implementation.
  *
- * Not yet imported anywhere — Phase 1+ tasks wire it in as each provider
- * (db/auth/payments/email/storage) lands, per docs/tasks.md.
  */
 const envSchema = z.object({
   NODE_ENV: z
@@ -42,7 +40,17 @@ const envSchema = z.object({
 });
 
 function loadEnv() {
-  const parsed = envSchema.safeParse(process.env);
+  // Unset optional vars round-trip through .env as empty strings, not
+  // `undefined` — normalize so `.optional()` actually skips validation
+  // instead of failing string/url checks on "".
+  const normalized = Object.fromEntries(
+    Object.entries(process.env).map(([key, value]) => [
+      key,
+      value === "" ? undefined : value,
+    ]),
+  );
+
+  const parsed = envSchema.safeParse(normalized);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)
