@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "radix-vega",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@medivi/ui/components",
+    "utils": "@medivi/ui/lib/utils",
+    "ui": "@medivi/ui/components/ui",
+    "lib": "@medivi/ui/lib",
+    "hooks": "@medivi/ui/hooks"
+  }
+}
