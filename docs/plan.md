@@ -297,10 +297,38 @@ dependency vulnerability alerts.
 
 ## 19. Observability
 
-- Sentry (client + server) for exceptions, release-tagged to deploy commit.
-- Structured JSON logs (pino) from every server action/route handler.
+- Sentry (client + server), wired via `instrumentation.ts` /
+  `instrumentation-client.ts` and a `captureException` wrapper
+  (`apps/web/lib/monitoring.ts`) called from every `error.tsx` boundary —
+  no-op when `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` are unset, so local
+  dev/CI never depend on a real Sentry project. On the client, both the init
+  call and every `captureException` call go through a dynamic `import("@sentry/nextjs")`
+  rather than a top-level static import — a static import would ship the
+  ~400KB+ client SDK to every page's bundle regardless of whether a DSN is
+  configured; found by inspecting `.next/static/chunks` after the initial
+  (static-import) integration and confirming the SDK had landed in the
+  shared chunk referenced by every page's initial HTML, not just the
+  error path.
+- Structured JSON logs (pino, `apps/web/lib/logger.ts`) at the handful of
+  server-side spots that actually need them: Stripe webhook receipt/outcome,
+  mock-checkout approval, and email-send failures. Pretty-printed in dev,
+  plain JSON in production. Not threaded through every CRUD server action —
+  those already get a structured record for free via the admin audit log
+  (see §12), so duplicating that into app logs would be redundant.
+- Rate limiting via a `RateLimiter` provider interface
+  (`packages/ratelimit`, same shape as `PaymentProvider`/`StorageProvider`/
+  `EmailProvider`): `UpstashRateLimiter` when `UPSTASH_REDIS_REST_URL`/
+  `_TOKEN` are set, else an in-process `MemoryRateLimiter` fallback (fine at
+  single-instance dev/deploy scale, not shared across instances). Applied to
+  checkout (`checkoutAction`, keyed by client IP) and the Stripe webhook
+  (keyed by client IP, checked before signature verification so a flood
+  doesn't even reach the signing-secret check). Auth's own sign-in/sign-up
+  endpoints use Better Auth's built-in `rateLimit` option instead of this
+  provider, since Better Auth already has special-cased per-path rules for
+  its own routes.
 - Health check route (`/api/health`) verifying DB connectivity, used by
-  Docker Compose healthchecks in self-host mode.
+  Docker Compose healthchecks in self-host mode. (Deferred to Phase 11
+  alongside the production Dockerfile/compose file it's meant to serve.)
 
 ## 20. Error Handling
 

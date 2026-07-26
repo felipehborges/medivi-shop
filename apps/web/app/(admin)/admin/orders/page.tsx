@@ -9,6 +9,7 @@ import type { OrderStatus } from "@medivi/db/schema";
 import { requireAdmin } from "@/lib/auth-guards";
 import { formatPriceCents } from "@/lib/format";
 import { CatalogPagination } from "@/components/catalog-pagination";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = { title: "Orders — Admin — Medivi Shop" };
 
@@ -40,7 +41,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       </div>
 
       {result.items.length === 0 ? (
-        <p className="text-muted-foreground">No orders match.</p>
+        <EmptyState title="No orders match" description="Try a different status filter." />
       ) : (
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm">

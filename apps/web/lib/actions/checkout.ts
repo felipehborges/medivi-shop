@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { db } from "@medivi/db/client";
@@ -8,13 +9,20 @@ import { getSession } from "@/lib/auth-guards";
 import { resolveOwnerForRead } from "@/lib/cart-owner";
 import { env } from "@/lib/env";
 import { getPaymentProvider } from "@/lib/payments";
+import { getCheckoutRateLimiter } from "@/lib/rate-limit";
 import { checkoutSchema, type CheckoutInput } from "@/lib/schemas/checkout";
 import { getShippingMethod } from "@/lib/shipping";
 
 export type CheckoutActionResult =
   | { ok: false; reason: "guest_email_required" }
   | { ok: false; reason: "empty_cart" }
+  | { ok: false; reason: "rate_limited" }
   | { ok: false; reason: "stock_or_price_changed"; issues: StockOrPriceIssue[] };
+
+async function getClientIdentifier(): Promise<string> {
+  const h = await headers();
+  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+}
 
 /**
  * Never sets order/payment status itself — it only creates the `pending`
@@ -24,6 +32,11 @@ export type CheckoutActionResult =
  */
 export async function checkoutAction(input: CheckoutInput): Promise<CheckoutActionResult> {
   const parsed = checkoutSchema.parse(input);
+
+  const identifier = await getClientIdentifier();
+  const rateLimit = await getCheckoutRateLimiter().limit(identifier);
+  if (!rateLimit.success) return { ok: false, reason: "rate_limited" };
+
   const session = await getSession();
   if (!session && !parsed.guestEmail) {
     return { ok: false, reason: "guest_email_required" };

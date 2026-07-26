@@ -48,6 +48,8 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
       setServerError("Your cart is empty.");
     } else if (result.reason === "guest_email_required") {
       setServerError("Enter an email address to check out as a guest.");
+    } else if (result.reason === "rate_limited") {
+      setServerError("Too many checkout attempts — please wait a moment and try again.");
     } else if (result.reason === "stock_or_price_changed") {
       const messages = result.issues.map((issue) =>
         issue.kind === "stock"

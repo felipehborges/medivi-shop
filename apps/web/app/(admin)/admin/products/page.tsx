@@ -10,6 +10,7 @@ import { requireAdmin } from "@/lib/auth-guards";
 import { formatPriceCents } from "@/lib/format";
 import { CatalogPagination } from "@/components/catalog-pagination";
 import { ProductStatusButton } from "@/components/admin/product-status-button";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = { title: "Products — Admin — Medivi Shop" };
 
@@ -67,7 +68,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       </form>
 
       {result.items.length === 0 ? (
-        <p className="text-muted-foreground">No products match.</p>
+        <EmptyState title="No products match" description="Try a different search term or clear the filters." />
       ) : (
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm">

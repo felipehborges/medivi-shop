@@ -50,6 +50,13 @@ export const auth = betterAuth({
       maxAge: 5 * 60,
     },
   },
+  // Auto-enables in production only (Better Auth's default) — its built-in
+  // special-path rules already tighten sign-in/sign-up further than this
+  // baseline, so no custom per-path rules are needed here.
+  rateLimit: {
+    window: 60,
+    max: 30,
+  },
   user: {
     additionalFields: {
       role: {

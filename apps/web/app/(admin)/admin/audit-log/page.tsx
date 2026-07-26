@@ -6,6 +6,7 @@ import { Button } from "@medivi/ui/components/ui/button";
 import { Input } from "@medivi/ui/components/ui/input";
 import { requireAdmin } from "@/lib/auth-guards";
 import { CatalogPagination } from "@/components/catalog-pagination";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = { title: "Audit log — Admin — Medivi Shop" };
 
@@ -59,7 +60,7 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
       </form>
 
       {result.items.length === 0 ? (
-        <p className="text-muted-foreground">No matching audit entries.</p>
+        <EmptyState title="No matching audit entries" description="Try a different actor id or entity type." />
       ) : (
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm">

@@ -7,6 +7,7 @@ import { Badge } from "@medivi/ui/components/ui/badge";
 import { Button } from "@medivi/ui/components/ui/button";
 import type { AdminBanner } from "@medivi/db/queries";
 import { deleteBannerAction } from "@/lib/actions/admin-banners";
+import { EmptyState } from "@/components/empty-state";
 import { BannerForm } from "./banner-form";
 
 export function BannerManager({ banners }: { banners: AdminBanner[] }) {
@@ -20,6 +21,9 @@ export function BannerManager({ banners }: { banners: AdminBanner[] }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {banners.length === 0 && editingId !== "new" && (
+        <EmptyState title="No banners yet" description="Add your first banner to feature it on the landing page." />
+      )}
       {banners.map((b) =>
         editingId === b.id ? (
           <BannerForm

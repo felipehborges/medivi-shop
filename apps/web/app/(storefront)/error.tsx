@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 
 import { Button } from "@medivi/ui/components/ui/button";
+import { captureException } from "@/lib/monitoring";
 
 export default function StorefrontError({
   error,
@@ -14,6 +15,7 @@ export default function StorefrontError({
 }) {
   useEffect(() => {
     console.error(error);
+    void captureException(error);
   }, [error]);
 
   return (

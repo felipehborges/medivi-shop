@@ -4,6 +4,7 @@ import { getOrderById } from "@medivi/db/queries";
 import { renderOrderConfirmationEmail } from "@medivi/email";
 import { getEmailProvider } from "@/lib/email";
 import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
 
 /**
  * Best-effort, outside the fulfillment transaction (see docs/architecture.md
@@ -28,6 +29,6 @@ export async function sendOrderConfirmationEmail(orderId: string): Promise<void>
 
     await getEmailProvider().send({ to: order.recipientEmail, subject, html });
   } catch (err) {
-    console.error("Failed to send order confirmation email", err);
+    logger.error({ err, orderId }, "Failed to send order confirmation email");
   }
 }

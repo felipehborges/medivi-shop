@@ -40,6 +40,7 @@ vi.mock("next/headers", () => ({
       cookieJar.delete(name);
     },
   }),
+  headers: async () => ({ get: () => null }),
 }));
 
 const { checkoutAction } = await import("./checkout");

@@ -7,6 +7,7 @@ import { Badge } from "@medivi/ui/components/ui/badge";
 import { Button } from "@medivi/ui/components/ui/button";
 import type { AdminCategory } from "@medivi/db/queries";
 import { deleteCategoryAction } from "@/lib/actions/admin-categories";
+import { EmptyState } from "@/components/empty-state";
 import { CategoryForm } from "./category-form";
 
 const DELETE_ERROR_MESSAGE: Record<string, string> = {
@@ -32,6 +33,9 @@ export function CategoryManager({ categories }: { categories: AdminCategory[] })
 
   return (
     <div className="flex flex-col gap-4">
+      {categories.length === 0 && editingId !== "new" && (
+        <EmptyState title="No categories yet" description="Add your first category to get started." />
+      )}
       {categories.map((c) =>
         editingId === c.id ? (
           <CategoryForm

@@ -56,7 +56,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SiteHeader />
-          <div className="flex flex-1 flex-col">{children}</div>
+          <main className="flex flex-1 flex-col">{children}</main>
           <SiteFooter />
           <Toaster />
           <AnalyticsBeacon />

@@ -27,6 +27,8 @@ export default async function Home() {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-8">
+      <h1 className="font-display text-2xl">Gear for Adventurers</h1>
+
       <HeroCarousel banners={heroBanners} />
 
       <FeaturedCategories categories={categories} />

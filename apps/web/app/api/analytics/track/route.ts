@@ -5,6 +5,7 @@ import { db } from "@medivi/db/client";
 import { recordAnalyticsEvent } from "@medivi/db/queries";
 import { getSession } from "@/lib/auth-guards";
 import { getOrCreateAnalyticsSessionId } from "@/lib/analytics-session";
+import { logger } from "@/lib/logger";
 
 const trackSchema = z.object({
   type: z.enum(["page_view", "add_to_cart", "wishlist_add", "checkout_started", "checkout_completed", "search_performed"]),
@@ -24,12 +25,16 @@ export async function POST(request: Request) {
 
   const sessionId = await getOrCreateAnalyticsSessionId();
   const session = await getSession();
-  await recordAnalyticsEvent(db, {
-    sessionId,
-    userId: session?.user.id,
-    type: parsed.data.type,
-    path: parsed.data.path,
-  });
+  try {
+    await recordAnalyticsEvent(db, {
+      sessionId,
+      userId: session?.user.id,
+      type: parsed.data.type,
+      path: parsed.data.path,
+    });
+  } catch (err) {
+    logger.error({ err, type: parsed.data.type }, "Failed to record analytics event");
+  }
 
   return NextResponse.json({ ok: true });
 }

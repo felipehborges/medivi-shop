@@ -66,6 +66,11 @@ export async function CatalogView({
   }
 
   const query = searchParams.q?.trim() || undefined;
+  const categoryName = categorySlug
+    ? (categories.find((c) => c.slug === categorySlug) ??
+        categories.flatMap((c) => c.children).find((c) => c.slug === categorySlug))?.name
+    : undefined;
+  const heading = query ? `Search results for "${query}"` : (categoryName ?? "Catalog");
   const page = parsePage(searchParams.page);
   const result = await listProducts(db, {
     categorySlug,
@@ -94,6 +99,7 @@ export async function CatalogView({
         <CatalogFilters basePath={basePath} searchParams={searchParams} materials={materials} />
       </aside>
       <div className="min-w-0 flex-1">
+        <h1 className="font-display mb-4 text-2xl">{heading}</h1>
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             {query ? (
