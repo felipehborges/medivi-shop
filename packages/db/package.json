@@ -6,6 +6,7 @@
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts",
     "./client": "./src/client.ts",
+    "./queries": "./src/queries/index.ts",
     "./test": "./src/test/index.ts"
   },
   "scripts": {

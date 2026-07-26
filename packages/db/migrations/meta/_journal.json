@@ -15,6 +15,20 @@
       "when": 1785017473459,
       "tag": "0001_reconcile_auth_with_better_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785028355655,
+      "tag": "0002_bright_ultragirl",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785029870623,
+      "tag": "0003_nice_nicolaos",
+      "breakpoints": true
     }
   ]
 }

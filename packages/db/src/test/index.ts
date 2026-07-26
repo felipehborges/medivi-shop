@@ -2,9 +2,7 @@ import "../lib/load-env";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../schema";
-
-type TestDb = ReturnType<typeof drizzle<typeof schema>>;
-type Tx = Parameters<Parameters<TestDb["transaction"]>[0]>[0];
+import type { Tx } from "../lib/db-client";
 
 const ROLLBACK = Symbol("test-transaction-rollback");
 
@@ -19,13 +17,17 @@ const ROLLBACK = Symbol("test-transaction-rollback");
  */
 export async function withTestTransaction<T>(
   fn: (tx: Tx) => Promise<T>,
+  options?: { onQuery?: () => void },
 ): Promise<T> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     throw new Error("DATABASE_URL is not set");
   }
 
-  const client = postgres(connectionString, { max: 1 });
+  const client = postgres(connectionString, {
+    max: 1,
+    debug: options?.onQuery ? () => options.onQuery!() : undefined,
+  });
   const db = drizzle(client, { schema, casing: "snake_case" });
 
   let result: T | undefined;

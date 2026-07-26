@@ -53,17 +53,17 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ## Phase 3 — Product Catalog
 
-- [ ] 3.1 Product query layer: list with pagination + filters + sort (plain functions in `packages/db`, unit-testable without HTTP)
-- [ ] 3.2 Category navigation (header menu, sidebar on catalog)
-- [ ] 3.3 Catalog page: grid, pagination, loading skeleton, empty state
-- [ ] 3.4 Filter UI (category/price range/material/in-stock) synced to URL search params
-- [ ] 3.5 Sort UI (price asc/desc, newest, featured)
-- [ ] 3.6 Search: FTS + trigram query function, search bar (debounced), empty-results state
-- [ ] 3.7 Product detail page: gallery, description, variant selector, stock badge
-- [ ] 3.8 Image gallery component (thumbnails, keyboard navigation, zoom)
-- [ ] 3.9 Related products section (same-category query)
-- [ ] 3.10 Tests: filter/sort query correctness, search relevance on seed data, no N+1 queries on listing (query-count assertion)
-- **Validation:** can browse, filter, sort, search, and open a product detail page against seeded data with correct results.
+- [x] 3.1 Product query layer: list with pagination + filters + sort (plain functions in `packages/db`, unit-testable without HTTP) — also added `product.isFeatured` (documented in `docs/plan.md` §10 as a "featured flag" but missing from the actual schema; see migration `0002_bright_ultragirl.sql`)
+- [x] 3.2 Category navigation (header menu, sidebar on catalog) — built together with 3.3 since the sidebar needed the catalog page to mount in
+- [x] 3.3 Catalog page: grid, pagination, loading skeleton, empty state — `/catalog` and `/catalog/[category]` (404s on an unknown slug), default sort is featured-first
+- [x] 3.4 Filter UI (category/price range/material/in-stock) synced to URL search params — category via route (`/catalog/[category]`), price/material/in-stock via a native GET form (no client JS required)
+- [x] 3.5 Sort UI (price asc/desc, newest, featured) — native GET form, preserves active filters via hidden inputs
+- [x] 3.6 Search: FTS + trigram query function, search bar (debounced), empty-results state — `word_similarity` (not plain `similarity`) for the fuzzy fallback, since `similarity` dilutes a short query against a multi-word name; enabled via migration `0003_nice_nicolaos.sql` (`pg_trgm` extension + trigram GIN index)
+- [x] 3.7 Product detail page: gallery, description, variant selector, stock badge — sized variants (S/M/L/XL) reordered by garment size, not the alphabetical DB order
+- [x] 3.8 Image gallery component (thumbnails, keyboard navigation, zoom) — built together with 3.7, same reasoning as the 3.2/3.3 pairing
+- [x] 3.9 Related products section (same-category query) — built together with 3.7
+- [x] 3.10 Tests: filter/sort query correctness, search relevance on seed data, no N+1 queries on listing (query-count assertion) — `withTestTransaction` gained an optional `onQuery` hook (postgres.js `debug` callback) to make the query-count assertion possible; asserts query count doesn't grow between 5 and 20 result rows, rather than pinning an exact number
+- **Validation:** `pnpm lint && pnpm typecheck && pnpm test && pnpm build` all pass workspace-wide (32 tests in `packages/db` covering filter/sort/pagination/search/category-tree/product-detail/related-products correctness, plus the N+1 query-count assertion, all against a real Postgres). Verified live in the browser end-to-end: header category dropdown, `/catalog` and `/catalog/[category]` grids with combined price/material/in-stock filters and sort (all synced to URL params, survive reload), search bar (debounced, typo-tolerant via `pg_trgm`), empty states for both "no filter results" and "no search results", a product detail page with size-ordered variant selector, live stock badge, image zoom (Escape closes it), related products, and 404s for unknown category/product slugs. Also found and fixed two real bugs along the way: (1) a hand-written `sql` subquery whose column references came out unqualified, silently matching the wrong table's `id` column and making `inStock`/`imageUrl` always resolve to `false`/`null` — fixed by building those subqueries through the query builder instead of raw `sql` interpolation; (2) `similarity()`'s fuzzy-search fallback diluting short queries against multi-word names — fixed by switching to `word_similarity()`. Unrelated to the app itself: repeatedly hit "sorry, too many clients already" against the local Postgres during this phase, traced to the Next dev server's Turbopack HMR re-creating `packages/db`'s module-level `postgres()` connection pool on every file edit without closing the old one — stopping the dev server before bulk `pnpm test` runs and restarting `docker restart medivi-shop-postgres-1` cleared it each time; worth a real fix (e.g. a global-scoped client keyed off `globalThis` in dev) if it keeps recurring in later phases.
 
 ## Phase 4 — Wishlist & Cart
 

@@ -21,6 +21,7 @@ type ProductSeed = {
   basePriceCents: number;
   categorySlug: string;
   variants: VariantSeed[];
+  isFeatured?: boolean;
 };
 
 function sizeVariants(
@@ -105,6 +106,7 @@ const PRODUCTS: ProductSeed[] = [
     basePriceCents: 32000,
     categorySlug: "swords",
     variants: singleVariant("SWD-DRG-GRT", 4),
+    isFeatured: true,
   },
   {
     name: "Mithril Shortsword",
@@ -161,6 +163,7 @@ const PRODUCTS: ProductSeed[] = [
     basePriceCents: 41000,
     categorySlug: "shields",
     variants: singleVariant("SHD-DRG-SCL", 5),
+    isFeatured: true,
   },
 
   // --- Helmets ---
@@ -237,6 +240,7 @@ const PRODUCTS: ProductSeed[] = [
     basePriceCents: 52000,
     categorySlug: "chestplates",
     variants: sizeVariants("CHT-MTH-PLT", [2, 4, 4, 2]),
+    isFeatured: true,
   },
 
   // --- Cloaks ---
@@ -266,6 +270,7 @@ const PRODUCTS: ProductSeed[] = [
     basePriceCents: 26000,
     categorySlug: "cloaks",
     variants: sizeVariants("CLK-SHD-WV", [4, 7, 7, 3]),
+    isFeatured: true,
   },
   {
     name: "Royal Velvet Cloak",
@@ -304,6 +309,7 @@ const PRODUCTS: ProductSeed[] = [
     basePriceCents: 45000,
     categorySlug: "relics",
     variants: singleVariant("RLC-SHD-FRS", 3),
+    isFeatured: true,
   },
   {
     name: "Idol of the Sunken Temple",
@@ -389,6 +395,7 @@ const PRODUCTS: ProductSeed[] = [
     basePriceCents: 9800,
     categorySlug: "banners",
     variants: singleVariant("BNR-SLV-WCH", 7),
+    isFeatured: true,
   },
   {
     name: "Tattered Field Banner",
@@ -450,6 +457,7 @@ async function main() {
           basePriceCents: p.basePriceCents,
           categoryId,
           status: "active",
+          isFeatured: p.isFeatured ?? false,
         })
         .returning({ id: product.id }),
       p.slug,

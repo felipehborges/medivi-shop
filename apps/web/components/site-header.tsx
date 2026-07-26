@@ -2,11 +2,18 @@ import Link from "next/link";
 
 import { Button } from "@medivi/ui/components/ui/button";
 import { ThemeToggle } from "@medivi/ui/components/theme-toggle";
+import { listCategoryTree } from "@medivi/db/queries";
+import { db } from "@medivi/db/client";
 import { getSession } from "@/lib/auth-guards";
 import { UserMenu } from "./user-menu";
+import { CategoryNav } from "./category-nav";
+import { SearchBar } from "./search-bar";
 
 export async function SiteHeader() {
-  const session = await getSession();
+  const [session, categories] = await Promise.all([
+    getSession(),
+    listCategoryTree(db),
+  ]);
 
   return (
     <header className="border-b border-border">
@@ -14,6 +21,10 @@ export async function SiteHeader() {
         <Link href="/" className="font-display text-lg font-semibold">
           Medivi Shop
         </Link>
+
+        <div className="hidden flex-1 justify-center px-8 sm:flex">
+          <SearchBar />
+        </div>
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -33,6 +44,9 @@ export async function SiteHeader() {
             </>
           )}
         </div>
+      </div>
+      <div className="mx-auto max-w-6xl px-4 pb-2">
+        <CategoryNav categories={categories} />
       </div>
     </header>
   );

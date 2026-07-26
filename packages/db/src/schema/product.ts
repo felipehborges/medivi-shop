@@ -1,5 +1,6 @@
 import { sql, type SQL } from "drizzle-orm";
 import {
+  boolean,
   check,
   index,
   integer,
@@ -35,6 +36,7 @@ export const product = pgTable(
     basePriceCents: integer("base_price_cents").notNull(),
     currency: text("currency").notNull().default("USD"),
     status: productStatusEnum("status").notNull().default("draft"),
+    isFeatured: boolean("is_featured").notNull().default(false),
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
     searchVector: tsvector("search_vector").generatedAlwaysAs(
@@ -47,6 +49,13 @@ export const product = pgTable(
   (table) => [
     index("product_search_idx").using("gin", table.searchVector),
     index("product_category_idx").on(table.categoryId),
+    index("product_featured_idx")
+      .on(table.isFeatured, table.createdAt)
+      .where(sql`${table.status} = 'active'`),
+    // Requires the pg_trgm extension — enabled by migration 0003 alongside
+    // this index, since drizzle-kit has no schema-level way to express
+    // `CREATE EXTENSION`. Backs the fuzzy fallback in `searchProducts`.
+    index("product_name_trgm_idx").using("gin", table.name.op("gin_trgm_ops")),
   ],
 );
 
