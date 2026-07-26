@@ -185,8 +185,25 @@ interface. Implementation notes:
   with the server action (single schema, imported both places — no drift
   between client and server validation).
 - Analytics dashboard reads aggregate SQL views/queries (revenue over time,
-  top products, low stock, recent orders) — no separate analytics service
-  required for v1 (see [spec.md §13](spec.md#13-analytics--telemetry-needs)).
+  order count, average order value, top products, low stock, recent orders)
+  — no separate analytics service required for v1 (see
+  [spec.md §13](spec.md#13-analytics--telemetry-needs)).
+- First-party event capture backing the conversion funnel (page view → add
+  to cart → checkout started → completed): an unsigned session-id cookie
+  (not security-sensitive, unlike the guest-cart cookie, so no HMAC needed)
+  minted by a `/api/analytics/track` Route Handler — a client beacon can't
+  write cookies itself, since Next only allows cookie writes from Server
+  Actions/Route Handlers, not Server Component render. A client component
+  mounted once in the root layout beacons on every navigation; `/checkout`
+  maps to the `checkout_started` milestone. `add_to_cart` is recorded
+  server-side inside the existing cart Server Action instead, since that
+  already runs on the real user action with cookie access. The completion
+  event fires from the order confirmation page rather than the Stripe
+  webhook/mock-approval path, because that boundary has no cookies to
+  attach a session to — this is also why real analytics pixels commonly
+  fire purchase events from the client-rendered "thank you" page rather
+  than a payment webhook. The funnel counts *distinct sessions* per step,
+  not raw events, so it reads as a conversion rate.
 
 ## 13. Images / Media
 

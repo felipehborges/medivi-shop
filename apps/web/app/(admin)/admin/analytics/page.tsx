@@ -2,34 +2,73 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { db } from "@medivi/db/client";
-import { listOrdersAdmin, lowStockAlerts, revenueOverTime, topProductsByRevenue } from "@medivi/db/queries";
+import {
+  conversionFunnel,
+  listOrdersAdmin,
+  lowStockAlerts,
+  revenueOverTime,
+  topProductsByRevenue,
+} from "@medivi/db/queries";
 import { Badge } from "@medivi/ui/components/ui/badge";
 import { requireAdmin } from "@/lib/auth-guards";
 import { formatPriceCents } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Analytics — Admin — Medivi Shop" };
 
+function FunnelStep({ label, count, ofTotal }: { label: string; count: number; ofTotal: number }) {
+  const pct = ofTotal > 0 ? Math.round((count / ofTotal) * 100) : 0;
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-baseline justify-between text-sm">
+        <span>{label}</span>
+        <span className="text-muted-foreground">
+          {count} {ofTotal > 0 && `(${pct}%)`}
+        </span>
+      </div>
+      <div className="h-2 w-full rounded-full bg-muted">
+        <div className="h-2 rounded-full bg-primary" style={{ width: `${Math.max(count > 0 ? 2 : 0, pct)}%` }} />
+      </div>
+    </div>
+  );
+}
+
 export default async function AdminAnalyticsPage() {
   await requireAdmin();
 
-  const [revenue, topProducts, lowStock, recentOrders] = await Promise.all([
+  const [revenue, topProducts, lowStock, recentOrders, funnel] = await Promise.all([
     revenueOverTime(db, 30),
     topProductsByRevenue(db, 5),
     lowStockAlerts(db, 5),
     listOrdersAdmin(db, { pageSize: 10 }),
+    conversionFunnel(db, 30),
   ]);
 
   const maxRevenueCents = Math.max(1, ...revenue.map((r) => r.revenueCents));
   const totalRevenueCents = revenue.reduce((sum, r) => sum + r.revenueCents, 0);
+  const totalOrders = revenue.reduce((sum, r) => sum + r.orderCount, 0);
+  const averageOrderValueCents = totalOrders > 0 ? Math.round(totalRevenueCents / totalOrders) : 0;
 
   return (
     <div className="flex flex-col gap-8">
       <h1 className="font-display text-3xl">Analytics</h1>
 
       <section className="flex flex-col gap-4 rounded-xl border p-6">
-        <div className="flex items-baseline justify-between">
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
           <h2 className="font-display text-xl">Revenue — last 30 days</h2>
-          <span className="font-display text-2xl">{formatPriceCents(totalRevenueCents)}</span>
+          <div className="flex gap-6 text-right">
+            <div>
+              <p className="text-xs text-muted-foreground">Revenue</p>
+              <p className="font-display text-2xl">{formatPriceCents(totalRevenueCents)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Orders</p>
+              <p className="font-display text-2xl">{totalOrders}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Avg. order value</p>
+              <p className="font-display text-2xl">{formatPriceCents(averageOrderValueCents)}</p>
+            </div>
+          </div>
         </div>
         {revenue.length === 0 ? (
           <p className="text-sm text-muted-foreground">No paid orders in this window yet.</p>
@@ -38,7 +77,7 @@ export default async function AdminAnalyticsPage() {
             {revenue.map((point) => (
               <div
                 key={point.date}
-                title={`${point.date}: ${formatPriceCents(point.revenueCents)}`}
+                title={`${point.date}: ${formatPriceCents(point.revenueCents)} (${point.orderCount} orders)`}
                 className="flex-1 rounded-sm bg-primary/70"
                 style={{ height: `${Math.max(4, (point.revenueCents / maxRevenueCents) * 100)}%` }}
               />
@@ -96,6 +135,23 @@ export default async function AdminAnalyticsPage() {
           )}
         </section>
       </div>
+
+      <section className="flex flex-col gap-4 rounded-xl border p-6">
+        <h2 className="font-display text-xl">Conversion funnel — last 30 days</h2>
+        <p className="text-xs text-muted-foreground">
+          Distinct visitor sessions reaching each step, not raw event counts.
+        </p>
+        {funnel.pageViews === 0 ? (
+          <p className="text-sm text-muted-foreground">No visits recorded in this window yet.</p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <FunnelStep label="Page views" count={funnel.pageViews} ofTotal={funnel.pageViews} />
+            <FunnelStep label="Added to cart" count={funnel.addToCart} ofTotal={funnel.pageViews} />
+            <FunnelStep label="Checkout started" count={funnel.checkoutStarted} ofTotal={funnel.pageViews} />
+            <FunnelStep label="Checkout completed" count={funnel.checkoutCompleted} ofTotal={funnel.pageViews} />
+          </div>
+        )}
+      </section>
 
       <section className="flex flex-col gap-4 rounded-xl border p-6">
         <h2 className="font-display text-xl">Recent orders</h2>

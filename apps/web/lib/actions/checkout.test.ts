@@ -1,7 +1,18 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
 import { db } from "@medivi/db/client";
-import { cart, cartItem, category, order, orderItem, payment, product, productVariant, user } from "@medivi/db/schema";
+import {
+  analyticsEvent,
+  cart,
+  cartItem,
+  category,
+  order,
+  orderItem,
+  payment,
+  product,
+  productVariant,
+  user,
+} from "@medivi/db/schema";
 
 const getSessionMock = vi.fn();
 vi.mock("@/lib/auth-guards", () => ({
@@ -55,6 +66,7 @@ let variantId: string;
 const createdUserIds: string[] = [];
 const createdOrderIds: string[] = [];
 const createdGuestTokens: string[] = [];
+const createdAnalyticsSessionIds: string[] = [];
 
 beforeAll(async () => {
   const [cat] = await db.insert(category).values({ name: unique("cat"), slug: unique("cat") }).returning();
@@ -74,6 +86,8 @@ beforeAll(async () => {
 afterEach(async () => {
   const guestToken = await readGuestCartToken();
   if (guestToken) createdGuestTokens.push(guestToken);
+  const analyticsSessionId = cookieJar.get("medivi_analytics_session");
+  if (analyticsSessionId) createdAnalyticsSessionIds.push(analyticsSessionId);
 
   cookieJar.clear();
   getSessionMock.mockReset();
@@ -91,6 +105,9 @@ afterAll(async () => {
   }
   for (const token of createdGuestTokens) {
     await db.delete(cart).where(eq(cart.guestToken, token));
+  }
+  for (const sessionId of createdAnalyticsSessionIds) {
+    await db.delete(analyticsEvent).where(eq(analyticsEvent.sessionId, sessionId));
   }
   await db.delete(product).where(eq(product.categoryId, categoryId));
   await db.delete(category).where(eq(category.id, categoryId));

@@ -42,6 +42,8 @@ export const analyticsEventTypeEnum = pgEnum("analytics_event_type", [
   "search_performed",
 ]);
 
+export type AnalyticsEventType = (typeof analyticsEventTypeEnum.enumValues)[number];
+
 export const analyticsEvent = pgTable("analytics_event", {
   id: uuid("id").primaryKey().defaultRandom(),
   sessionId: text("session_id").notNull(),

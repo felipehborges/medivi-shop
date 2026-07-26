@@ -7,6 +7,7 @@ import { getOrderById } from "@medivi/db/queries";
 import { Button } from "@medivi/ui/components/ui/button";
 import { OrderDetailCard } from "@/components/order-detail-card";
 import { OrderStatusPoller } from "@/components/order-status-poller";
+import { CheckoutCompletedBeacon } from "@/components/checkout-completed-beacon";
 
 export const metadata: Metadata = {
   title: "Order confirmation — Medivi Shop",
@@ -24,6 +25,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       {isProcessing && <OrderStatusPoller />}
+      {isPaid && <CheckoutCompletedBeacon orderId={order.id} />}
 
       <div className="mb-6 flex flex-col items-center gap-2 text-center">
         {isPaid && (

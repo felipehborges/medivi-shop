@@ -1,12 +1,12 @@
-import { and, asc, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, asc, count, countDistinct, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 
 import type { DbClient } from "../lib/db-client";
-import { order, orderItem, product, productVariant } from "../schema";
+import { analyticsEvent, order, orderItem, product, productVariant } from "../schema";
 
 /** Revenue only counts orders that actually collected money — `pending`/`cancelled` never contribute. */
 const REVENUE_STATUSES = ["paid", "fulfilled"] as const;
 
-export type RevenuePoint = { date: string; revenueCents: number };
+export type RevenuePoint = { date: string; revenueCents: number; orderCount: number };
 
 export async function revenueOverTime(db: DbClient, days = 30): Promise<RevenuePoint[]> {
   const since = new Date();
@@ -17,6 +17,7 @@ export async function revenueOverTime(db: DbClient, days = 30): Promise<RevenueP
     .select({
       date: dateBucket,
       revenueCents: sql<number>`coalesce(sum(${order.totalCents}), 0)`.mapWith(Number),
+      orderCount: count(),
     })
     .from(order)
     .where(and(inArray(order.status, REVENUE_STATUSES), gte(order.createdAt, since)))
@@ -65,4 +66,41 @@ export async function lowStockAlerts(db: DbClient, threshold = 5): Promise<LowSt
     .innerJoin(product, eq(product.id, productVariant.productId))
     .where(and(lte(productVariant.stock, threshold), eq(product.status, "active")))
     .orderBy(asc(productVariant.stock));
+}
+
+export type ConversionFunnel = {
+  pageViews: number;
+  addToCart: number;
+  checkoutStarted: number;
+  checkoutCompleted: number;
+};
+
+const FUNNEL_EVENT_TYPES = ["page_view", "add_to_cart", "checkout_started", "checkout_completed"] as const;
+
+/**
+ * Counts *distinct sessions* that reached each milestone, not raw event
+ * counts — a session with three page views only counts once, so the funnel
+ * reads as a conversion rate rather than an activity volume (see
+ * docs/spec.md §"Analytics/telemetry").
+ */
+export async function conversionFunnel(db: DbClient, days = 30): Promise<ConversionFunnel> {
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+
+  const rows = await db
+    .select({
+      type: analyticsEvent.type,
+      sessions: countDistinct(analyticsEvent.sessionId),
+    })
+    .from(analyticsEvent)
+    .where(and(inArray(analyticsEvent.type, FUNNEL_EVENT_TYPES), gte(analyticsEvent.createdAt, since)))
+    .groupBy(analyticsEvent.type);
+
+  const sessionsByType = new Map(rows.map((r) => [r.type, r.sessions]));
+  return {
+    pageViews: sessionsByType.get("page_view") ?? 0,
+    addToCart: sessionsByType.get("add_to_cart") ?? 0,
+    checkoutStarted: sessionsByType.get("checkout_started") ?? 0,
+    checkoutCompleted: sessionsByType.get("checkout_completed") ?? 0,
+  };
 }

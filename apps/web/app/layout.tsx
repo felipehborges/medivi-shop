@@ -3,6 +3,7 @@ import { Cinzel, Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@medivi/ui/components/theme-provider";
 import { Toaster } from "@medivi/ui/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
+import { AnalyticsBeacon } from "@/components/analytics-beacon";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,6 +47,7 @@ export default function RootLayout({
           <SiteHeader />
           {children}
           <Toaster />
+          <AnalyticsBeacon />
         </ThemeProvider>
       </body>
     </html>

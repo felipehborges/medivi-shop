@@ -7,14 +7,16 @@ import { db } from "@medivi/db/client";
 import {
   addCartItem,
   mergeGuestCartIntoUserCart,
+  recordAnalyticsEvent,
   removeCartItem,
   updateCartItemQuantity,
   type AddToCartResult,
   type UpdateQuantityResult,
 } from "@medivi/db/queries";
-import { requireUser } from "@/lib/auth-guards";
+import { getSession, requireUser } from "@/lib/auth-guards";
 import { resolveOwnerForMutation, resolveOwnerForRead } from "@/lib/cart-owner";
 import { clearGuestCartCookie, readGuestCartToken } from "@/lib/guest-cart-cookie";
+import { getOrCreateAnalyticsSessionId } from "@/lib/analytics-session";
 
 const addToCartSchema = z.object({
   variantId: z.string().uuid(),
@@ -27,7 +29,16 @@ export async function addToCartAction(
   const { variantId, quantity } = addToCartSchema.parse(input);
   const owner = await resolveOwnerForMutation();
   const result = await addCartItem(db, owner, variantId, quantity);
-  if (result.ok) revalidatePath("/", "layout");
+  if (result.ok) {
+    revalidatePath("/", "layout");
+    const [sessionId, session] = await Promise.all([getOrCreateAnalyticsSessionId(), getSession()]);
+    await recordAnalyticsEvent(db, {
+      sessionId,
+      userId: session?.user.id,
+      type: "add_to_cart",
+      metadata: { variantId, quantity },
+    });
+  }
   return result;
 }
 
