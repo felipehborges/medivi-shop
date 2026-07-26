@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +10,7 @@ import { z } from "zod";
 import { Button } from "@medivi/ui/components/ui/button";
 import { Input } from "@medivi/ui/components/ui/input";
 import { Label } from "@medivi/ui/components/ui/label";
-import { signIn } from "@/lib/auth-client";
+import { signIn, sendVerificationEmail } from "@/lib/auth-client";
 import { mergeCartOnLogin } from "@/lib/actions/cart";
 
 const signInSchema = z.object({
@@ -22,6 +23,8 @@ type SignInValues = z.infer<typeof signInSchema>;
 export function SignInForm() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle");
   const {
     register,
     handleSubmit,
@@ -30,14 +33,27 @@ export function SignInForm() {
 
   async function onSubmit(values: SignInValues) {
     setServerError(null);
+    setUnverifiedEmail(null);
+    setResendState("idle");
     const { error } = await signIn.email(values);
     if (error) {
-      setServerError(error.message ?? "Invalid email or password.");
+      if (error.code === "EMAIL_NOT_VERIFIED") {
+        setUnverifiedEmail(values.email);
+      } else {
+        setServerError(error.message ?? "Invalid email or password.");
+      }
       return;
     }
     await mergeCartOnLogin();
     router.push("/account");
     router.refresh();
+  }
+
+  async function onResend() {
+    if (!unverifiedEmail) return;
+    setResendState("sending");
+    await sendVerificationEmail({ email: unverifiedEmail, callbackURL: "/account" });
+    setResendState("sent");
   }
 
   return (
@@ -64,7 +80,12 @@ export function SignInForm() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Password</Label>
+          <Link href="/forgot-password" className="text-xs text-muted-foreground underline">
+            Forgot password?
+          </Link>
+        </div>
         <Input
           id="password"
           type="password"
@@ -88,6 +109,15 @@ export function SignInForm() {
         <p role="alert" className="text-sm text-destructive">
           {serverError}
         </p>
+      )}
+
+      {unverifiedEmail && (
+        <div role="alert" className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+          <p>Verify your email before signing in — check your inbox for the link.</p>
+          <Button type="button" size="sm" variant="outline" disabled={resendState !== "idle"} onClick={onResend}>
+            {resendState === "sent" ? "Verification email sent" : resendState === "sending" ? "Sending…" : "Resend verification email"}
+          </Button>
+        </div>
       )}
 
       <Button type="submit" disabled={isSubmitting}>

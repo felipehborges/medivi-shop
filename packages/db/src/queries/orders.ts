@@ -13,6 +13,7 @@ import {
   processedWebhookEvent,
   product,
   productVariant,
+  user,
   type AddressSnapshot,
   type OrderStatus,
   type PaymentProviderName,
@@ -175,6 +176,8 @@ export type OrderDetail = {
   status: OrderStatus;
   userId: string | null;
   guestEmail: string | null;
+  /** `guestEmail` for guest orders, the account's email for authenticated ones — where confirmation emails are sent. */
+  recipientEmail: string | null;
   subtotalCents: number;
   shippingCents: number;
   taxCents: number;
@@ -216,7 +219,13 @@ export async function getOrderById(db: DbClient, orderId: string): Promise<Order
     .orderBy(desc(payment.createdAt))
     .limit(1);
 
-  return { ...orderRow, items, latestPaymentStatus: latestPayment?.status ?? null };
+  let recipientEmail = orderRow.guestEmail;
+  if (!recipientEmail && orderRow.userId) {
+    const [userRow] = await db.select({ email: user.email }).from(user).where(eq(user.id, orderRow.userId)).limit(1);
+    recipientEmail = userRow?.email ?? null;
+  }
+
+  return { ...orderRow, items, recipientEmail, latestPaymentStatus: latestPayment?.status ?? null };
 }
 
 /** Ownership-scoped — returns `null` if the order exists but belongs to someone else. */

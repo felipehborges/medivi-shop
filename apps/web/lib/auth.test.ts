@@ -1,9 +1,15 @@
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
 import { db } from "@medivi/db/client";
 import { account, session, user } from "@medivi/db/schema";
 import { APIError } from "better-auth/api";
-import { auth } from "./auth";
+
+const sendEmailMock = vi.fn();
+vi.mock("@/lib/email", () => ({
+  getEmailProvider: () => ({ send: sendEmailMock }),
+}));
+
+const { auth } = await import("./auth");
 
 const testEmails: string[] = [];
 
@@ -12,6 +18,10 @@ function uniqueEmail(label: string) {
   testEmails.push(email);
   return email;
 }
+
+afterEach(() => {
+  sendEmailMock.mockClear();
+});
 
 afterAll(async () => {
   for (const email of testEmails) {
@@ -38,27 +48,57 @@ describe("sign up", () => {
     expect(accountRow?.password).not.toBe("correcthorsebatterystaple");
   });
 
-  it("rejects a duplicate email", async () => {
+  it("does not create a second account for an email that's already verified", async () => {
+    // Doesn't throw — Better Auth returns a non-persisted response instead
+    // of a hard conflict here, to avoid leaking via an error message whether
+    // an email is already registered (account enumeration). An unverified
+    // duplicate, by contrast, is allowed to retry sign-up freely, since an
+    // incomplete signup is reclaimable.
     const email = uniqueEmail("dupe");
-    await auth.api.signUpEmail({
+    const signedUp = await auth.api.signUpEmail({
       body: { name: "Dupe Test", email, password: "correcthorsebatterystaple" },
     });
+    await db.update(user).set({ emailVerified: true }).where(eq(user.id, signedUp.user.id));
 
-    await expect(
-      auth.api.signUpEmail({
-        body: { name: "Dupe Test 2", email, password: "anotherpassword123" },
-      }),
-    ).rejects.toThrow(APIError);
+    await auth.api.signUpEmail({
+      body: { name: "Dupe Test 2", email, password: "anotherpassword123" },
+    });
+
+    const rows = await db.select().from(user).where(eq(user.email, email));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.id).toBe(signedUp.user.id);
+  });
+
+  it("sends a welcome email and a verification email", async () => {
+    const email = uniqueEmail("emails");
+    await auth.api.signUpEmail({
+      body: { name: "Email Test", email, password: "correcthorsebatterystaple" },
+    });
+
+    expect(sendEmailMock).toHaveBeenCalledTimes(2);
+    const recipients = sendEmailMock.mock.calls.map((call) => call[0].to);
+    expect(recipients).toEqual([email, email]);
+    const subjects = sendEmailMock.mock.calls.map((call) => call[0].subject);
+    expect(subjects).toEqual(expect.arrayContaining(["Welcome to Medivi Shop", "Verify your email address"]));
   });
 });
 
 describe("sign in", () => {
-  it("succeeds with correct credentials and persists a session", async () => {
+  it("rejects sign-in for an unverified email", async () => {
+    const email = uniqueEmail("unverified");
+    const password = "correcthorsebatterystaple";
+    await auth.api.signUpEmail({ body: { name: "Unverified Test", email, password } });
+
+    await expect(auth.api.signInEmail({ body: { email, password } })).rejects.toThrow(APIError);
+  });
+
+  it("succeeds with correct credentials once verified, and persists a session", async () => {
     const email = uniqueEmail("signin-ok");
     const password = "correcthorsebatterystaple";
     const signedUp = await auth.api.signUpEmail({
       body: { name: "Signin Test", email, password },
     });
+    await db.update(user).set({ emailVerified: true }).where(eq(user.id, signedUp.user.id));
 
     const result = await auth.api.signInEmail({ body: { email, password } });
     expect(result.user.email).toBe(email);
@@ -73,12 +113,31 @@ describe("sign in", () => {
 
   it("rejects an incorrect password", async () => {
     const email = uniqueEmail("signin-bad");
-    await auth.api.signUpEmail({
+    const signedUp = await auth.api.signUpEmail({
       body: { name: "Signin Bad Test", email, password: "correcthorsebatterystaple" },
     });
+    await db.update(user).set({ emailVerified: true }).where(eq(user.id, signedUp.user.id));
 
     await expect(
       auth.api.signInEmail({ body: { email, password: "wrongpassword" } }),
     ).rejects.toThrow(APIError);
+  });
+});
+
+describe("password reset", () => {
+  it("sends a reset-password email with a working token", async () => {
+    const email = uniqueEmail("reset");
+    await auth.api.signUpEmail({
+      body: { name: "Reset Test", email, password: "correcthorsebatterystaple" },
+    });
+    sendEmailMock.mockClear();
+
+    await auth.api.requestPasswordReset({ body: { email, redirectTo: "http://localhost:3000/reset-password" } });
+
+    expect(sendEmailMock).toHaveBeenCalledOnce();
+    const sentEmail = sendEmailMock.mock.calls[0]![0];
+    expect(sentEmail.to).toBe(email);
+    expect(sentEmail.subject).toBe("Reset your password");
+    expect(sentEmail.html).toContain("Reset password");
   });
 });

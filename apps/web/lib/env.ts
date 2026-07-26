@@ -25,6 +25,7 @@ const envSchema = z.object({
 
   EMAIL_PROVIDER: z.enum(["console", "resend"]).default("console"),
   RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default("Medivi Shop <no-reply@medivi.shop>"),
 
   STORAGE_PROVIDER: z.enum(["s3", "vercel-blob"]).default("s3"),
   S3_ENDPOINT: z.string().url().optional(),

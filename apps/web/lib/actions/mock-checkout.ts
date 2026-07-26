@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { db } from "@medivi/db/client";
 import { fulfillPaidOrder, getOrderById, recordPaymentFailure } from "@medivi/db/queries";
+import { sendOrderConfirmationEmail } from "@/lib/order-confirmation-email";
 
 const mockActionSchema = z.object({
   orderId: z.string().uuid(),
@@ -21,12 +22,13 @@ export async function approveMockPayment(input: z.infer<typeof mockActionSchema>
   const { orderId, redirectUrl } = mockActionSchema.parse(input);
   const order = await getOrderById(db, orderId);
   if (order && order.status === "pending") {
-    await fulfillPaidOrder(db, {
+    const outcome = await fulfillPaidOrder(db, {
       eventId: `mock_${orderId}_approved`,
       provider: "mock",
       orderId,
       providerRef: `mock_${orderId}`,
     });
+    if (outcome.outcome === "paid") await sendOrderConfirmationEmail(orderId);
     revalidatePath("/", "layout");
   }
   redirect(redirectUrl);

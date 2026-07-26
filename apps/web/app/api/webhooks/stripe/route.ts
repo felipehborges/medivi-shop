@@ -5,6 +5,7 @@ import { db } from "@medivi/db/client";
 import { fulfillPaidOrder, recordPaymentFailure } from "@medivi/db/queries";
 import type { PaymentEvent } from "@medivi/payments";
 import { getPaymentProvider } from "@/lib/payments";
+import { sendOrderConfirmationEmail } from "@/lib/order-confirmation-email";
 
 /**
  * The one route-level exception to "let it throw" (see docs/plan.md §20):
@@ -26,12 +27,13 @@ export async function POST(request: Request) {
   }
 
   if (event.type === "checkout_completed") {
-    await fulfillPaidOrder(db, {
+    const outcome = await fulfillPaidOrder(db, {
       eventId,
       provider: "stripe",
       orderId: event.orderId,
       providerRef: event.providerRef,
     });
+    if (outcome.outcome === "paid") await sendOrderConfirmationEmail(event.orderId);
     revalidatePath("/", "layout");
   } else if (event.type === "checkout_failed") {
     await recordPaymentFailure(db, { eventId, provider: "stripe", orderId: event.orderId });

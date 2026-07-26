@@ -100,6 +100,16 @@ ships and the ecosystem (Next.js tooling, typescript-eslint) confirms support.
   is enforced separately; every admin server action re-checks role
   server-side regardless (defense in depth, see
   [architecture.md §11](architecture.md#11-moduleaccess-boundaries)).
+- `emailAndPassword.requireEmailVerification: true` as of Phase 8 (deferred
+  until then — see CLAUDE.md's Phase 2 note — since flipping it before an
+  `EmailProvider` existed would've locked out every signup with no way to
+  receive the verification email). Sign-up itself does not establish a
+  session once this is on; only `signIn.email()` after verifying does — see
+  CLAUDE.md's "Better Auth's requireEmailVerification" gotcha for the three
+  non-obvious behavior changes this brings (no auto-login post-signup, a
+  specific `EMAIL_NOT_VERIFIED` error code to handle, and no hard conflict
+  on duplicate signup against an already-verified email, to avoid account
+  enumeration).
 
 ## 6. Cart
 

@@ -13,6 +13,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.4.3",
     "@medivi/db": "workspace:*",
+    "@medivi/email": "workspace:*",
     "@medivi/payments": "workspace:*",
     "@medivi/storage": "workspace:*",
     "@medivi/ui": "workspace:*",
@@ -25,6 +26,7 @@
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.83.0",
     "server-only": "^0.0.1",
+    "sonner": "^2.0.7",
     "zod": "^4.4.3"
   },
   "devDependencies": {

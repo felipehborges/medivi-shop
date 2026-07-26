@@ -11,6 +11,12 @@ vi.mock("next/navigation", () => ({
   redirect: (url: string) => redirectMock(url),
 }));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
+vi.mock("server-only", () => ({}));
+
+const sendEmailMock = vi.fn();
+vi.mock("@/lib/email", () => ({
+  getEmailProvider: () => ({ send: sendEmailMock }),
+}));
 
 const { approveMockPayment, declineMockPayment } = await import("./mock-checkout");
 
@@ -69,6 +75,7 @@ beforeAll(async () => {
 
 afterEach(() => {
   redirectMock.mockClear();
+  sendEmailMock.mockClear();
 });
 
 afterAll(async () => {
@@ -97,15 +104,22 @@ describe("approveMockPayment", () => {
 
     const [variantRow] = await db.select().from(productVariant).where(eq(productVariant.id, variantId));
     expect(variantRow?.stock).toBe(3);
+
+    expect(sendEmailMock).toHaveBeenCalledOnce();
+    const sentTo = sendEmailMock.mock.calls[0]![0].to;
+    const [userRow] = await db.select().from(user).where(eq(user.id, createdUserIds.at(-1)!));
+    expect(sentTo).toBe(userRow?.email);
   });
 
   it("is a no-op (but still redirects) when the order is no longer pending", async () => {
     const { orderId } = await makeOrder(5, 1);
     await approveMockPayment({ orderId, redirectUrl: "http://localhost:3000/x" }).catch(() => {});
+    sendEmailMock.mockClear();
 
     await expect(approveMockPayment({ orderId, redirectUrl: "http://localhost:3000/x" })).rejects.toThrow(/^REDIRECT:/);
     const [orderRow] = await db.select().from(order).where(eq(order.id, orderId));
     expect(orderRow?.status).toBe("paid");
+    expect(sendEmailMock).not.toHaveBeenCalled();
   });
 });
 
@@ -122,5 +136,6 @@ describe("declineMockPayment", () => {
 
     const [paymentRow] = await db.select().from(payment).where(eq(payment.orderId, orderId));
     expect(paymentRow?.status).toBe("failed");
+    expect(sendEmailMock).not.toHaveBeenCalled();
   });
 });

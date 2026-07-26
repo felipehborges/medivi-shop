@@ -91,6 +91,31 @@ re-derive decisions already made there.
   `packages/db/src/lib/pg-errors.ts` (`isUniqueViolation` /
   `isForeignKeyViolation` / `isCheckViolation`) rather than re-deriving this
   — they already unwrap `.cause`.
+- **Better Auth's `emailAndPassword.requireEmailVerification: true` changes
+  more than sign-in.** Three non-obvious consequences, found the hard way in
+  Phase 8:
+  1. `signUp.email()` no longer establishes a session. A client flow that
+     assumes auto-login after sign-up (calling a server action that requires
+     a session, or redirecting to an authenticated page) silently breaks —
+     in a browser with no other session it bounces to `/sign-in` via
+     whatever guard the destination page has; in a browser that *does* have
+     an unrelated valid session cookie lying around, it's worse: the new
+     account gets created, but the old session stays active and the app
+     proceeds as that other user. Don't assume a session exists post-sign-up
+     — show a "check your email" state instead (see
+     `app/(account)/sign-up/sign-up-form.tsx`) and let the cart merge happen
+     at first real sign-in instead.
+  2. `signIn.email()` for an unverified account throws an `APIError` with
+     `error.code === "EMAIL_NOT_VERIFIED"` (status `FORBIDDEN`) — handle
+     that code specifically to show a "resend verification email" action
+     rather than a generic "invalid credentials" message.
+  3. Signing up again with an email that's already registered does **not**
+     throw a conflict error — Better Auth returns a non-persisted, fake-looking
+     success response instead, deliberately avoiding leaking via an error
+     message whether an email is taken (account enumeration). Only a
+     duplicate signup against an *unverified* email is genuinely reprocessed
+     as a retry. Don't write tests (or UI) that expect a hard rejection here
+     — assert on DB state (no second row created) instead.
 
 ## Commands
 

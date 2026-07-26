@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,7 +10,6 @@ import { Button } from "@medivi/ui/components/ui/button";
 import { Input } from "@medivi/ui/components/ui/input";
 import { Label } from "@medivi/ui/components/ui/label";
 import { signUp } from "@/lib/auth-client";
-import { mergeCartOnLogin } from "@/lib/actions/cart";
 
 const signUpSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -21,8 +20,8 @@ const signUpSchema = z.object({
 type SignUpValues = z.infer<typeof signUpSchema>;
 
 export function SignUpForm() {
-  const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -36,9 +35,24 @@ export function SignUpForm() {
       setServerError(error.message ?? "Something went wrong. Try again.");
       return;
     }
-    await mergeCartOnLogin();
-    router.push("/account");
-    router.refresh();
+    // Email verification is required to sign in, so sign-up doesn't establish
+    // a session here — the cart merge (see sign-in-form.tsx) happens once
+    // they actually sign in after verifying, not at signup time.
+    setSubmittedEmail(values.email);
+  }
+
+  if (submittedEmail) {
+    return (
+      <div className="flex flex-col gap-3 text-sm">
+        <p>
+          Account created for <strong>{submittedEmail}</strong>. Check your email for a verification link, then{" "}
+          <Link href="/sign-in" className="font-medium text-foreground underline">
+            sign in
+          </Link>
+          .
+        </p>
+      </div>
+    );
   }
 
   return (

@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import Stripe from "stripe";
 import { eq } from "drizzle-orm";
 import { db } from "@medivi/db/client";
@@ -9,6 +9,7 @@ const webhookSecret = "whsec_route_test_secret";
 
 vi.mock("@/lib/env", () => ({
   env: {
+    NEXT_PUBLIC_APP_URL: "http://localhost:3000",
     PAYMENT_PROVIDER: "stripe",
     STRIPE_SECRET_KEY: "sk_test_dummy",
     STRIPE_WEBHOOK_SECRET: webhookSecret,
@@ -16,6 +17,11 @@ vi.mock("@/lib/env", () => ({
 }));
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
+
+const sendEmailMock = vi.fn();
+vi.mock("@/lib/email", () => ({
+  getEmailProvider: () => ({ send: sendEmailMock }),
+}));
 
 const { POST } = await import("./route");
 
@@ -72,6 +78,10 @@ async function makeOrder() {
 beforeAll(async () => {
   const [cat] = await db.insert(category).values({ name: unique("cat"), slug: unique("cat") }).returning();
   categoryId = cat!.id;
+});
+
+afterEach(() => {
+  sendEmailMock.mockClear();
 });
 
 afterAll(async () => {
@@ -137,6 +147,10 @@ describe("POST /api/webhooks/stripe", () => {
 
     const events = await db.select().from(processedWebhookEvent).where(eq(processedWebhookEvent.eventId, eventId));
     expect(events).toHaveLength(1);
+
+    expect(sendEmailMock).toHaveBeenCalledOnce();
+    const [userRow] = await db.select().from(user).where(eq(user.id, createdUserIds.at(-1)!));
+    expect(sendEmailMock.mock.calls[0]![0].to).toBe(userRow?.email);
   });
 
   it("is idempotent when the same event is redelivered", async () => {
@@ -152,11 +166,13 @@ describe("POST /api/webhooks/stripe", () => {
       });
 
     await POST(request());
+    sendEmailMock.mockClear();
     const secondResponse = await POST(request());
     expect(secondResponse.status).toBe(200);
 
     const events = await db.select().from(processedWebhookEvent).where(eq(processedWebhookEvent.eventId, eventId));
     expect(events).toHaveLength(1);
+    expect(sendEmailMock).not.toHaveBeenCalled();
   });
 
   it("records a failure on checkout.session.expired without touching stock", async () => {
