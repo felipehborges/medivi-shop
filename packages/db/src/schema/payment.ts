@@ -10,7 +10,11 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "refunded",
 ]);
 
+export type PaymentStatus = (typeof paymentStatusEnum.enumValues)[number];
+
 export const paymentProviderEnum = pgEnum("payment_provider", ["stripe", "mock"]);
+
+export type PaymentProviderName = (typeof paymentProviderEnum.enumValues)[number];
 
 /**
  * One row per order today; not unique-constrained on `orderId` so a future

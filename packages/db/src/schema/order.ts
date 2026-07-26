@@ -22,6 +22,8 @@ export const orderStatusEnum = pgEnum("order_status", [
   "refunded",
 ]);
 
+export type OrderStatus = (typeof orderStatusEnum.enumValues)[number];
+
 export type AddressSnapshot = {
   fullName: string;
   line1: string;

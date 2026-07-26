@@ -13,6 +13,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.4.3",
     "@medivi/db": "workspace:*",
+    "@medivi/payments": "workspace:*",
     "@medivi/ui": "workspace:*",
     "better-auth": "^1.6.25",
     "lucide-react": "^1.26.0",
@@ -34,6 +35,7 @@
     "drizzle-orm": "^0.45.2",
     "eslint": "^9.39.0",
     "eslint-config-next": "16.2.11",
+    "stripe": "^22.3.2",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.9.0",
     "vitest": "^4.1.10"
