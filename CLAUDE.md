@@ -72,6 +72,15 @@ re-derive decisions already made there.
   (default/`proxy` named export, Node.js runtime by default now). Docs here
   still say "middleware" for the concept; the actual file is
   `apps/web/proxy.ts`.
+- **Never re-export a type through a `"use server"` file**, even a type-only
+  `export type { X }`. Next's dev-mode server-actions bundler tries to treat
+  every re-export clause as an action reference regardless of the `type`
+  keyword, and throws `ReferenceError: X is not defined` at request time —
+  `next build`'s production bundler doesn't hit this path, so it only shows
+  up in `next dev`. If a Server Action's input type needs to be shared with
+  a client form, put the type (and its Zod schema) in a plain module the
+  action file imports from, and have the client import it from there too —
+  never from the action file itself.
 
 ## Commands
 
