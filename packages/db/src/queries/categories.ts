@@ -10,6 +10,7 @@ export type CategoryNavChild = {
 };
 
 export type CategoryNavNode = CategoryNavChild & {
+  imageUrl: string | null;
   children: CategoryNavChild[];
 };
 
@@ -24,6 +25,7 @@ export async function listCategoryTree(db: DbClient): Promise<CategoryNavNode[]>
       name: category.name,
       slug: category.slug,
       parentId: category.parentId,
+      imageUrl: category.imageUrl,
     })
     .from(category)
     .orderBy(asc(category.createdAt));
@@ -42,6 +44,7 @@ export async function listCategoryTree(db: DbClient): Promise<CategoryNavNode[]>
       id: row.id,
       name: row.name,
       slug: row.slug,
+      imageUrl: row.imageUrl,
       children: childrenByParentId.get(row.id) ?? [],
     }));
 }

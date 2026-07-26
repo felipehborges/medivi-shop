@@ -83,6 +83,9 @@ launch — it's a single-region, single-currency, single-tenant store.
 /account/settings              Profile/password
 /sign-in
 /sign-up
+/privacy                       Legal placeholder: Privacy Policy
+/terms                         Legal placeholder: Terms of Service
+/shipping-returns              Legal placeholder: Shipping & Returns
 /admin                         Admin dashboard home (analytics)
 /admin/products                Product CRUD
 /admin/products/[id]

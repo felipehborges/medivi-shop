@@ -3,7 +3,10 @@ import { Cinzel, Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@medivi/ui/components/theme-provider";
 import { Toaster } from "@medivi/ui/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { AnalyticsBeacon } from "@/components/analytics-beacon";
+import { JsonLd } from "@/components/json-ld";
+import { env } from "@/lib/env";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,6 +41,14 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Medivi Shop",
+            url: env.NEXT_PUBLIC_APP_URL,
+          }}
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -45,7 +56,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SiteHeader />
-          {children}
+          <div className="flex flex-1 flex-col">{children}</div>
+          <SiteFooter />
           <Toaster />
           <AnalyticsBeacon />
         </ThemeProvider>

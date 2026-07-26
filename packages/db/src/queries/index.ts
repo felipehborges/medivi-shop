@@ -13,3 +13,4 @@ export * from "./admin-analytics";
 export * from "./admin-audit";
 export * from "./admin-users";
 export * from "./analytics";
+export * from "./banners";

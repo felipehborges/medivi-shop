@@ -63,6 +63,19 @@ ships and the ecosystem (Next.js tooling, typescript-eslint) confirms support.
   text contrast before adoption, not just eyeballed.
 - Typography: a serif display face for headings (fantasy/editorial feel), a
   legible sans for body text — never sacrifice legibility for theme.
+- Landing page (`app/page.tsx`) composes from existing catalog primitives
+  rather than bespoke queries: hero/promo banners from a new public
+  `listActiveBanners` query (filters `isActive` + the `startsAt`/`endsAt`
+  window — separate from the admin CRUD listing, which shows everything),
+  featured categories from `listCategoryTree`, featured products from
+  `listProducts({sort: "featured"})`. Each section renders nothing when its
+  data is empty, rather than a placeholder skeleton, since an empty
+  homepage section reads as "nothing configured yet" for this project's
+  scale, not a loading/error state.
+- `Product`/`BreadcrumbList`/`Organization` JSON-LD render via a shared
+  `JsonLd` component that escapes `<` before inlining the `<script
+  type="application/ld+json">` tag — otherwise a title/description
+  containing `</script>` could break out of the tag.
 
 ## 3. Backend
 
