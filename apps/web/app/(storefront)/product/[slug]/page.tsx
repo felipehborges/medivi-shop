@@ -3,10 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { db } from "@medivi/db/client";
-import { getProductBySlug, listRelatedProducts } from "@medivi/db/queries";
+import { getProductBySlug, getWishlistedProductIds, listRelatedProducts } from "@medivi/db/queries";
+import { getSession } from "@/lib/auth-guards";
 import { ProductGallery } from "@/components/product-gallery";
 import { ProductVariantPanel } from "@/components/product-variant-panel";
 import { RelatedProducts } from "@/components/related-products";
+import { WishlistButton } from "@/components/wishlist-button";
 
 export async function generateMetadata({
   params,
@@ -31,10 +33,11 @@ export default async function ProductPage({
   const product = await getProductBySlug(db, slug);
   if (!product) notFound();
 
-  const related = await listRelatedProducts(db, {
-    categoryId: product.categoryId,
-    excludeProductId: product.id,
-  });
+  const [related, session] = await Promise.all([
+    listRelatedProducts(db, { categoryId: product.categoryId, excludeProductId: product.id }),
+    getSession(),
+  ]);
+  const wishlistedIds = session ? await getWishlistedProductIds(db, session.user.id) : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -54,11 +57,16 @@ export default async function ProductPage({
         <ProductGallery images={product.images} productName={product.name} />
 
         <div className="flex flex-col gap-4">
-          <div>
-            {product.material && (
-              <p className="text-sm text-muted-foreground">{product.material}</p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              {product.material && (
+                <p className="text-sm text-muted-foreground">{product.material}</p>
+              )}
+              <h1 className="font-display text-3xl">{product.name}</h1>
+            </div>
+            {wishlistedIds && (
+              <WishlistButton productId={product.id} initialWishlisted={wishlistedIds.has(product.id)} />
             )}
-            <h1 className="font-display text-3xl">{product.name}</h1>
           </div>
 
           <ProductVariantPanel variants={product.variants} currency={product.currency} />
@@ -68,7 +76,7 @@ export default async function ProductPage({
         </div>
       </div>
 
-      <RelatedProducts products={related} />
+      <RelatedProducts products={related} wishlistedIds={wishlistedIds} />
     </div>
   );
 }

@@ -46,6 +46,9 @@ export function UserMenu({
         <DropdownMenuItem asChild>
           <Link href="/account/orders">Order history</Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/wishlist">Wishlist</Link>
+        </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem asChild>
             <Link href="/admin">Admin dashboard</Link>

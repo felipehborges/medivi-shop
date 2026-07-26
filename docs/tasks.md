@@ -67,8 +67,8 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ## Phase 4 — Wishlist & Cart
 
-- [ ] 4.1 Wishlist data layer (add/remove/list)
-- [ ] 4.2 Wishlist UI (toggle on product card + detail, `/wishlist` page)
+- [x] 4.1 Wishlist data layer (add/remove/list) — `addToWishlist`/`removeFromWishlist` idempotent via `onConflictDoNothing`, `getWishlistedProductIds` for a batch membership check (no per-card query), `listWishlistProducts` for the `/wishlist` page reusing the catalog's image/stock subqueries
+- [x] 4.2 Wishlist UI (toggle on product card + detail, `/wishlist` page) — toggle button lives as an absolutely-positioned sibling of the card's `<Link>` (not nested inside it) to avoid an invalid button-inside-anchor; hidden for guests; `/wishlist` added to `proxy.ts`'s matcher alongside `/account` and `/admin`
 - [ ] 4.3 Cart data layer: guest cookie-token cart + user cart + merge-on-login
 - [ ] 4.4 Add-to-cart server action with stock validation
 - [ ] 4.5 Cart drawer/page UI: quantity stepper, remove, subtotal, empty state

@@ -1,7 +1,14 @@
 import { notFound } from "next/navigation";
 
 import { db } from "@medivi/db/client";
-import { listCategoryTree, listMaterials, listProducts, type ProductSort } from "@medivi/db/queries";
+import {
+  getWishlistedProductIds,
+  listCategoryTree,
+  listMaterials,
+  listProducts,
+  type ProductSort,
+} from "@medivi/db/queries";
+import { getSession } from "@/lib/auth-guards";
 import { CategorySidebar } from "./category-sidebar";
 import { CatalogFilters } from "./catalog-filters";
 import { CatalogSort } from "./catalog-sort";
@@ -46,10 +53,12 @@ export async function CatalogView({
   searchParams: CatalogSearchParams;
   basePath: string;
 }) {
-  const [categories, materials] = await Promise.all([
+  const [categories, materials, session] = await Promise.all([
     listCategoryTree(db),
     listMaterials(db, categorySlug),
+    getSession(),
   ]);
+  const wishlistedIds = session ? await getWishlistedProductIds(db, session.user.id) : null;
 
   if (categorySlug) {
     const knownSlugs = categories.flatMap((c) => [c.slug, ...c.children.map((ch) => ch.slug)]);
@@ -112,7 +121,12 @@ export async function CatalogView({
           <>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {result.items.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  showWishlistButton={!!wishlistedIds}
+                  isWishlisted={wishlistedIds?.has(product.id)}
+                />
               ))}
             </div>
             <div className="mt-8">

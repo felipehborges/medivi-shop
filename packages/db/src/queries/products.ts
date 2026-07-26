@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, gt, gte, ilike, inArray, isNotNull, lte, sql, type SQL } from "drizzle-orm";
 
 import type { DbClient } from "../lib/db-client";
-import { category, product, productImage, productVariant } from "../schema";
+import { category, product, productImage, productVariant, wishlist, wishlistItem } from "../schema";
 
 export type ProductSort = "price-asc" | "price-desc" | "newest" | "featured";
 
@@ -370,4 +370,28 @@ export async function listMaterials(db: DbClient, categorySlug?: string): Promis
     .orderBy(asc(product.material));
 
   return rows.map((r) => r.material).filter((m): m is string => m !== null);
+}
+
+/** A user's wishlisted products, in the same shape as a catalog listing, for the /wishlist page. */
+export async function listWishlistProducts(db: DbClient, userId: string): Promise<ProductListItem[]> {
+  const rows = await db
+    .select({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      basePriceCents: product.basePriceCents,
+      material: product.material,
+      isFeatured: product.isFeatured,
+      categoryId: product.categoryId,
+      imageUrl: sql<string | null>`(${firstImageSubquery(db, productImage.url)})`,
+      imageAlt: sql<string | null>`(${firstImageSubquery(db, productImage.altText)})`,
+      inStock: sql<boolean>`exists (${inStockSubquery(db)})`,
+    })
+    .from(wishlistItem)
+    .innerJoin(wishlist, eq(wishlist.id, wishlistItem.wishlistId))
+    .innerJoin(product, eq(product.id, wishlistItem.productId))
+    .where(and(eq(wishlist.userId, userId), eq(product.status, "active")))
+    .orderBy(desc(wishlistItem.createdAt));
+
+  return rows;
 }

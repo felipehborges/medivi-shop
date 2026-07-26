@@ -111,6 +111,17 @@ ships and the ecosystem (Next.js tooling, typescript-eslint) confirms support.
 - Add/update/remove are Server Actions; the cart drawer is a thin Client
   Component reflecting server state via Next.js's mutation + revalidation
   cycle, not a separately-synced client store.
+- "Signed" cookie token, concretely: the cookie value is
+  `${guestToken}.${hmacHex}` where `hmacHex = HMAC-SHA256(guestToken,
+  BETTER_AUTH_SECRET)`, verified with a timing-safe comparison on read — no
+  new secret/dependency, reuses the Better Auth secret already required.
+  `guestToken` itself is the random id stored in `cart.guest_token`. A
+  missing/invalid/tampered signature is treated the same as no cookie at
+  all (a fresh guest cart is created transparently on the next
+  add-to-cart) — this is a low-value target (an empty or someone else's
+  guest cart), so failing open to "start over" is simpler than surfacing
+  an error, unlike auth/payment tokens where failing open would be a real
+  vulnerability.
 
 ## 7. Checkout
 
