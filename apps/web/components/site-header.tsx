@@ -5,14 +5,17 @@ import { ThemeToggle } from "@medivi/ui/components/theme-toggle";
 import { listCategoryTree } from "@medivi/db/queries";
 import { db } from "@medivi/db/client";
 import { getSession } from "@/lib/auth-guards";
+import { getCurrentCartDetail } from "@/lib/cart";
 import { UserMenu } from "./user-menu";
 import { CategoryNav } from "./category-nav";
 import { SearchBar } from "./search-bar";
+import { CartDrawer } from "./cart-drawer";
 
 export async function SiteHeader() {
-  const [session, categories] = await Promise.all([
+  const [session, categories, cart] = await Promise.all([
     getSession(),
     listCategoryTree(db),
+    getCurrentCartDetail(),
   ]);
 
   return (
@@ -28,6 +31,7 @@ export async function SiteHeader() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <CartDrawer cart={cart} />
           {session ? (
             <UserMenu
               name={session.user.name}
