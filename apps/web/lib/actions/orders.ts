@@ -4,9 +4,20 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { db } from "@medivi/db/client";
-import { getLatestPaymentForOrder, markOrderRefunded } from "@medivi/db/queries";
+import { getLatestPaymentForOrder, markOrderFulfilledAdmin, markOrderRefunded } from "@medivi/db/queries";
 import { requireAdmin } from "@/lib/auth-guards";
 import { getPaymentProvider } from "@/lib/payments";
+
+const fulfillOrderSchema = z.object({ orderId: z.string().uuid() });
+
+/** Admin-only; every admin server action re-checks the caller's role itself (see CLAUDE.md). */
+export async function fulfillOrderAction(input: z.infer<typeof fulfillOrderSchema>) {
+  const admin = await requireAdmin();
+  const { orderId } = fulfillOrderSchema.parse(input);
+  const result = await markOrderFulfilledAdmin(db, admin.id, orderId);
+  if (result.ok) revalidatePath(`/admin/orders/${orderId}`);
+  return result;
+}
 
 const refundOrderSchema = z.object({ orderId: z.string().uuid() });
 

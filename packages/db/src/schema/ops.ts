@@ -9,6 +9,8 @@ export const inventoryChangeReasonEnum = pgEnum("inventory_change_reason", [
   "adjustment",
 ]);
 
+export type InventoryChangeReason = (typeof inventoryChangeReasonEnum.enumValues)[number];
+
 export const inventoryLog = pgTable("inventory_log", {
   id: uuid("id").primaryKey().defaultRandom(),
   variantId: uuid("variant_id")

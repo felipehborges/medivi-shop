@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^5.4.3",
     "@medivi/db": "workspace:*",
     "@medivi/payments": "workspace:*",
+    "@medivi/storage": "workspace:*",
     "@medivi/ui": "workspace:*",
     "better-auth": "^1.6.25",
     "lucide-react": "^1.26.0",

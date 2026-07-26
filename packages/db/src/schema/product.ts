@@ -21,6 +21,8 @@ export const productStatusEnum = pgEnum("product_status", [
   "archived",
 ]);
 
+export type ProductStatus = (typeof productStatusEnum.enumValues)[number];
+
 export const product = pgTable(
   "product",
   {

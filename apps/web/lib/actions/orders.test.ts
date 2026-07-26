@@ -11,7 +11,7 @@ vi.mock("@/lib/auth-guards", () => ({
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 
-const { refundOrderAction } = await import("./orders");
+const { fulfillOrderAction, refundOrderAction } = await import("./orders");
 
 let counter = 0;
 function unique(prefix: string) {
@@ -124,6 +124,36 @@ describe("refundOrderAction", () => {
     const orderId = await makeOrder({ paid: false });
 
     const result = await refundOrderAction({ orderId });
+    expect(result).toEqual({ ok: false, reason: "invalid_state" });
+  });
+});
+
+describe("fulfillOrderAction", () => {
+  it("requires an admin session", async () => {
+    requireAdminMock.mockRejectedValue(new Error("REDIRECT:/"));
+    const orderId = await makeOrder({ paid: true });
+    await expect(fulfillOrderAction({ orderId })).rejects.toThrow("REDIRECT:/");
+  });
+
+  it("moves a paid order to fulfilled and writes an audit log row", async () => {
+    requireAdminMock.mockResolvedValue({ id: adminId });
+    const orderId = await makeOrder({ paid: true });
+
+    const result = await fulfillOrderAction({ orderId });
+    expect(result).toEqual({ ok: true });
+
+    const [orderRow] = await db.select().from(order).where(eq(order.id, orderId));
+    expect(orderRow?.status).toBe("fulfilled");
+
+    const logs = await db.select().from(auditLog).where(eq(auditLog.entityId, orderId));
+    expect(logs.map((l) => l.action)).toContain("order.fulfill");
+  });
+
+  it("rejects fulfilling a pending (unpaid) order", async () => {
+    requireAdminMock.mockResolvedValue({ id: adminId });
+    const orderId = await makeOrder({ paid: false });
+
+    const result = await fulfillOrderAction({ orderId });
     expect(result).toEqual({ ok: false, reason: "invalid_state" });
   });
 });

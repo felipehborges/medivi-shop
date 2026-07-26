@@ -5,6 +5,8 @@ export const bannerPlacementEnum = pgEnum("banner_placement", [
   "category",
 ]);
 
+export type BannerPlacement = (typeof bannerPlacementEnum.enumValues)[number];
+
 export const banner = pgTable("banner", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
