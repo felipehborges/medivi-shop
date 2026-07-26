@@ -69,8 +69,8 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
 - [x] 4.1 Wishlist data layer (add/remove/list) — `addToWishlist`/`removeFromWishlist` idempotent via `onConflictDoNothing`, `getWishlistedProductIds` for a batch membership check (no per-card query), `listWishlistProducts` for the `/wishlist` page reusing the catalog's image/stock subqueries
 - [x] 4.2 Wishlist UI (toggle on product card + detail, `/wishlist` page) — toggle button lives as an absolutely-positioned sibling of the card's `<Link>` (not nested inside it) to avoid an invalid button-inside-anchor; hidden for guests; `/wishlist` added to `proxy.ts`'s matcher alongside `/account` and `/admin`
-- [ ] 4.3 Cart data layer: guest cookie-token cart + user cart + merge-on-login
-- [ ] 4.4 Add-to-cart server action with stock validation
+- [x] 4.3 Cart data layer: guest cookie-token cart + user cart + merge-on-login — also added a missing `unique()` on `cart.userId` (migration `0004_windy_riptide.sql`; the schema only enforced one-cart-per-guest-token, not one-cart-per-user)
+- [x] 4.4 Add-to-cart server action with stock validation — added update-quantity/remove/merge-on-login actions alongside it (same file, same owner-resolution helpers); guest cart cookie is HMAC-signed per the `docs/plan.md` §6 addendum; merge-on-login wired into both the sign-in and sign-up form success handlers
 - [ ] 4.5 Cart drawer/page UI: quantity stepper, remove, subtotal, empty state
 - [ ] 4.6 Tests: guest→login cart merge (sum + clamp to stock), quantity update, removal, add-to-cart blocked when out of stock
 - **Validation:** add items as guest, sign in, cart merges correctly with stock-aware clamping; wishlist persists per user.

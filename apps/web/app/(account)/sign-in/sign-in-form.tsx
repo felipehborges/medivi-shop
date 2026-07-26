@@ -10,6 +10,7 @@ import { Button } from "@medivi/ui/components/ui/button";
 import { Input } from "@medivi/ui/components/ui/input";
 import { Label } from "@medivi/ui/components/ui/label";
 import { signIn } from "@/lib/auth-client";
+import { mergeCartOnLogin } from "@/lib/actions/cart";
 
 const signInSchema = z.object({
   email: z.string().email("Enter a valid email address"),
@@ -34,6 +35,7 @@ export function SignInForm() {
       setServerError(error.message ?? "Invalid email or password.");
       return;
     }
+    await mergeCartOnLogin();
     router.push("/account");
     router.refresh();
   }

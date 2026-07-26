@@ -29,6 +29,13 @@
       "when": 1785029870623,
       "tag": "0003_nice_nicolaos",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785040101514,
+      "tag": "0004_windy_riptide",
+      "breakpoints": true
     }
   ]
 }

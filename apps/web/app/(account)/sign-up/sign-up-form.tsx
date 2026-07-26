@@ -10,6 +10,7 @@ import { Button } from "@medivi/ui/components/ui/button";
 import { Input } from "@medivi/ui/components/ui/input";
 import { Label } from "@medivi/ui/components/ui/label";
 import { signUp } from "@/lib/auth-client";
+import { mergeCartOnLogin } from "@/lib/actions/cart";
 
 const signUpSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -35,6 +36,7 @@ export function SignUpForm() {
       setServerError(error.message ?? "Something went wrong. Try again.");
       return;
     }
+    await mergeCartOnLogin();
     router.push("/account");
     router.refresh();
   }

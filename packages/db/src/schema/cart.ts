@@ -22,7 +22,9 @@ export const cart = pgTable(
   "cart",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .unique()
+      .references(() => user.id, { onDelete: "cascade" }),
     guestToken: text("guest_token").unique(),
     currency: text("currency").notNull().default("USD"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
