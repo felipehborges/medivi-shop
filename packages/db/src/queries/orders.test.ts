@@ -20,6 +20,9 @@ import {
   fulfillPaidOrder,
   getLatestPaymentForOrder,
   getOrderById,
+  getOrderForGuestLookup,
+  getOrderForUser,
+  listOrdersForUser,
   markOrderRefunded,
   recordPaymentFailure,
 } from "./orders";
@@ -216,6 +219,27 @@ describe("fulfillPaidOrder", () => {
     });
   });
 
+  it("clears a guest cart on success too (identified via order.cartId, not userId)", async () => {
+    await withTestTransaction(async (tx) => {
+      const { variant } = await makeVariant(tx, 5);
+      const guestToken = unique("guest");
+      const cartRow = await makeCartWithItem(tx, { guestToken }, variant.id, 1, 1000);
+      const created = await createOrder(
+        tx,
+        cartRow.id,
+        { guestEmail: "guest@example.com" },
+        { shippingAddress, shippingCents: 500 },
+      );
+      if (!created.ok) throw new Error("expected ok");
+      await createPayment(tx, { orderId: created.orderId, provider: "mock", providerRef: `mock_${created.orderId}`, amountCents: created.totalCents });
+
+      await fulfillPaidOrder(tx, { eventId: unique("evt"), provider: "mock", orderId: created.orderId, providerRef: `mock_${created.orderId}` });
+
+      const remaining = await tx.select().from(cartItem).where(eq(cartItem.cartId, cartRow.id));
+      expect(remaining).toHaveLength(0);
+    });
+  });
+
   it("is idempotent on eventId", async () => {
     await withTestTransaction(async (tx) => {
       const { orderId, variantId } = await makeOrderWithItem(tx, 5, 2);
@@ -357,6 +381,103 @@ describe("getLatestPaymentForOrder", () => {
 
       const latest = await getLatestPaymentForOrder(tx, created.orderId);
       expect(latest).toMatchObject({ provider: "stripe", providerRef: "cs_test_1", status: "requires_payment" });
+    });
+  });
+});
+
+describe("getOrderForUser", () => {
+  it("returns the order for its owner", async () => {
+    await withTestTransaction(async (tx) => {
+      const u = await makeUser(tx);
+      const { variant } = await makeVariant(tx, 5);
+      const cartRow = await makeCartWithItem(tx, { userId: u.id }, variant.id, 1, 1000);
+      const created = await createOrder(tx, cartRow.id, { userId: u.id }, { shippingAddress, shippingCents: 500 });
+      if (!created.ok) throw new Error("expected ok");
+
+      const detail = await getOrderForUser(tx, created.orderId, u.id);
+      expect(detail?.id).toBe(created.orderId);
+    });
+  });
+
+  it("returns null when the order belongs to a different user", async () => {
+    await withTestTransaction(async (tx) => {
+      const owner = await makeUser(tx);
+      const other = await makeUser(tx);
+      const { variant } = await makeVariant(tx, 5);
+      const cartRow = await makeCartWithItem(tx, { userId: owner.id }, variant.id, 1, 1000);
+      const created = await createOrder(tx, cartRow.id, { userId: owner.id }, { shippingAddress, shippingCents: 500 });
+      if (!created.ok) throw new Error("expected ok");
+
+      const detail = await getOrderForUser(tx, created.orderId, other.id);
+      expect(detail).toBeNull();
+    });
+  });
+});
+
+describe("getOrderForGuestLookup", () => {
+  it("matches on order number + guest email", async () => {
+    await withTestTransaction(async (tx) => {
+      const { variant } = await makeVariant(tx, 5);
+      const guestToken = unique("guest");
+      const cartRow = await makeCartWithItem(tx, { guestToken }, variant.id, 1, 1000);
+      const created = await createOrder(
+        tx,
+        cartRow.id,
+        { guestEmail: "guest@example.com" },
+        { shippingAddress, shippingCents: 500 },
+      );
+      if (!created.ok) throw new Error("expected ok");
+
+      const detail = await getOrderForGuestLookup(tx, created.orderNumber, "guest@example.com");
+      expect(detail?.id).toBe(created.orderId);
+    });
+  });
+
+  it("returns null when the email doesn't match", async () => {
+    await withTestTransaction(async (tx) => {
+      const { variant } = await makeVariant(tx, 5);
+      const guestToken = unique("guest");
+      const cartRow = await makeCartWithItem(tx, { guestToken }, variant.id, 1, 1000);
+      const created = await createOrder(
+        tx,
+        cartRow.id,
+        { guestEmail: "guest@example.com" },
+        { shippingAddress, shippingCents: 500 },
+      );
+      if (!created.ok) throw new Error("expected ok");
+
+      const detail = await getOrderForGuestLookup(tx, created.orderNumber, "wrong@example.com");
+      expect(detail).toBeNull();
+    });
+  });
+
+  it("returns null for an unknown order number", async () => {
+    await withTestTransaction(async (tx) => {
+      const detail = await getOrderForGuestLookup(tx, "MDV-DOES-NOT-EXIST", "guest@example.com");
+      expect(detail).toBeNull();
+    });
+  });
+});
+
+describe("listOrdersForUser", () => {
+  it("lists only the user's own orders, newest first, with item counts", async () => {
+    await withTestTransaction(async (tx) => {
+      const u = await makeUser(tx);
+      const other = await makeUser(tx);
+      const { variant } = await makeVariant(tx, 10);
+
+      const cartA = await makeCartWithItem(tx, { userId: u.id }, variant.id, 2, 1000);
+      const orderA = await createOrder(tx, cartA.id, { userId: u.id }, { shippingAddress, shippingCents: 500 });
+      if (!orderA.ok) throw new Error("expected ok");
+
+      const cartOther = await makeCartWithItem(tx, { userId: other.id }, variant.id, 1, 1000);
+      const orderOther = await createOrder(tx, cartOther.id, { userId: other.id }, { shippingAddress, shippingCents: 500 });
+      if (!orderOther.ok) throw new Error("expected ok");
+
+      const list = await listOrdersForUser(tx, u.id);
+      expect(list).toHaveLength(1);
+      expect(list[0]?.id).toBe(orderA.orderId);
+      expect(list[0]?.itemCount).toBe(2);
     });
   });
 });

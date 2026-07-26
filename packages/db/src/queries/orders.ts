@@ -5,7 +5,6 @@ import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
 import type { DbClient } from "../lib/db-client";
 import {
   auditLog,
-  cart,
   cartItem,
   inventoryLog,
   order,
@@ -107,6 +106,7 @@ export async function createOrder(
         orderNumber,
         userId: owner.userId ?? null,
         guestEmail: owner.guestEmail ?? null,
+        cartId,
         status: "pending",
         subtotalCents,
         shippingCents: input.shippingCents,
@@ -219,6 +219,61 @@ export async function getOrderById(db: DbClient, orderId: string): Promise<Order
   return { ...orderRow, items, latestPaymentStatus: latestPayment?.status ?? null };
 }
 
+/** Ownership-scoped — returns `null` if the order exists but belongs to someone else. */
+export async function getOrderForUser(db: DbClient, orderId: string, userId: string): Promise<OrderDetail | null> {
+  const detail = await getOrderById(db, orderId);
+  if (!detail || detail.userId !== userId) return null;
+  return detail;
+}
+
+/**
+ * Guest order lookup requires *both* the order number and the guest email
+ * on file to match — a single unguessable id isn't the gate here since this
+ * is the durable "come back later without an account" path, not an
+ * immediate post-checkout redirect (see docs/spec.md §7).
+ */
+export async function getOrderForGuestLookup(
+  db: DbClient,
+  orderNumber: string,
+  guestEmail: string,
+): Promise<OrderDetail | null> {
+  const [row] = await db
+    .select({ id: order.id })
+    .from(order)
+    .where(and(eq(order.orderNumber, orderNumber), eq(order.guestEmail, guestEmail)))
+    .limit(1);
+  if (!row) return null;
+  return getOrderById(db, row.id);
+}
+
+export type OrderSummary = {
+  id: string;
+  orderNumber: string;
+  status: OrderStatus;
+  totalCents: number;
+  currency: string;
+  createdAt: Date;
+  itemCount: number;
+};
+
+export async function listOrdersForUser(db: DbClient, userId: string): Promise<OrderSummary[]> {
+  return db
+    .select({
+      id: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      totalCents: order.totalCents,
+      currency: order.currency,
+      createdAt: order.createdAt,
+      itemCount: sql<number>`coalesce(sum(${orderItem.quantity}), 0)`.mapWith(Number),
+    })
+    .from(order)
+    .leftJoin(orderItem, eq(orderItem.orderId, order.id))
+    .where(eq(order.userId, userId))
+    .groupBy(order.id)
+    .orderBy(desc(order.createdAt));
+}
+
 export type FulfillEvent = {
   eventId: string;
   provider: PaymentProviderName;
@@ -295,10 +350,9 @@ export async function fulfillPaidOrder(db: DbClient, event: FulfillEvent): Promi
       .set({ status: "paid", updatedAt: new Date() })
       .where(and(eq(order.id, event.orderId), eq(order.status, "pending")));
 
-    const [orderRow] = await tx.select({ userId: order.userId }).from(order).where(eq(order.id, event.orderId)).limit(1);
-    if (orderRow?.userId) {
-      const [userCart] = await tx.select({ id: cart.id }).from(cart).where(eq(cart.userId, orderRow.userId)).limit(1);
-      if (userCart) await tx.delete(cartItem).where(eq(cartItem.cartId, userCart.id));
+    const [orderRow] = await tx.select({ cartId: order.cartId }).from(order).where(eq(order.id, event.orderId)).limit(1);
+    if (orderRow?.cartId) {
+      await tx.delete(cartItem).where(eq(cartItem.cartId, orderRow.cartId));
     }
 
     return { outcome: "paid" };

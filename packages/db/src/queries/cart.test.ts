@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { withTestTransaction } from "../test";
-import { category, product, productVariant, user } from "../schema";
+import { category, product, productImage, productVariant, user } from "../schema";
 import type { Tx } from "../lib/db-client";
 import {
   addCartItem,
@@ -62,6 +62,22 @@ describe("addCartItem", () => {
       expect(detail.items[0]?.quantity).toBe(2);
       expect(detail.items[0]?.priceSnapshotCents).toBe(1000);
       expect(detail.subtotalCents).toBe(2000);
+    });
+  });
+
+  it("resolves the product's first image (by position) as imageUrl", async () => {
+    await withTestTransaction(async (tx) => {
+      const u = await makeUser(tx);
+      const { product: p, variant } = await makeVariant(tx, 5);
+      await tx.insert(productImage).values([
+        { productId: p.id, url: "https://example.com/second.jpg", altText: "second", position: 2 },
+        { productId: p.id, url: "https://example.com/first.jpg", altText: "first", position: 1 },
+      ]);
+
+      await addCartItem(tx, { userId: u.id }, variant.id, 1);
+
+      const detail = await getCartDetail(tx, { userId: u.id });
+      expect(detail.items[0]?.imageUrl).toBe("https://example.com/first.jpg");
     });
   });
 

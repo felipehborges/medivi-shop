@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
+import { cart } from "./cart";
 import { product, productVariant } from "./product";
 
 export const orderStatusEnum = pgEnum("order_status", [
@@ -43,6 +44,13 @@ export const order = pgTable(
       onDelete: "set null",
     }),
     guestEmail: text("guest_email"),
+    /**
+     * The cart this order was checked out from — guest or authenticated
+     * alike. Needed at fulfillment time to clear the right cart on a
+     * successful payment; `guestEmail` alone can't identify a guest's cart
+     * (that's keyed by an unrelated signed cookie token).
+     */
+    cartId: uuid("cart_id").references(() => cart.id, { onDelete: "set null" }),
     status: orderStatusEnum("status").notNull().default("pending"),
     subtotalCents: integer("subtotal_cents").notNull(),
     shippingCents: integer("shipping_cents").notNull().default(0),

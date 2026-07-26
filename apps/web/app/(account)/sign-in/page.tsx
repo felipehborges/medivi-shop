@@ -30,6 +30,12 @@ export default function SignInPage() {
               Create one
             </Link>
           </p>
+          <p className="text-center text-sm text-muted-foreground">
+            Checked out as a guest?{" "}
+            <Link href="/orders/lookup" className="font-medium text-foreground underline">
+              Find your order
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>

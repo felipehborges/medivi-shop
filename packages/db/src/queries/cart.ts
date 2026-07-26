@@ -29,6 +29,22 @@ export type CartDetail = {
 
 const EMPTY_CART: CartDetail = { id: null, items: [], subtotalCents: 0, itemCount: 0 };
 
+/**
+ * Built via the query builder rather than raw `sql` interpolation — a
+ * hand-written `where ${productImage.productId} = ${product.id}` renders
+ * both sides as bare column names, and `productImage` has its own `id`
+ * column that silently shadows the outer `product.id` reference, matching
+ * the wrong row (see the identical bug fixed in products.ts, Phase 3).
+ */
+function firstImageUrlSubquery(db: DbClient) {
+  return db
+    .select({ url: productImage.url })
+    .from(productImage)
+    .where(eq(productImage.productId, product.id))
+    .orderBy(asc(productImage.position))
+    .limit(1);
+}
+
 function ownerCondition(owner: CartOwner) {
   return "userId" in owner ? eq(cart.userId, owner.userId) : eq(cart.guestToken, owner.guestToken);
 }
@@ -73,12 +89,7 @@ export async function getCartDetail(db: DbClient, owner: CartOwner): Promise<Car
       productId: product.id,
       productName: product.name,
       productSlug: product.slug,
-      imageUrl: sql<string | null>`(
-        select ${productImage.url} from ${productImage}
-        where ${productImage.productId} = ${product.id}
-        order by ${productImage.position} asc
-        limit 1
-      )`,
+      imageUrl: sql<string | null>`(${firstImageUrlSubquery(db)})`,
     })
     .from(cartItem)
     .innerJoin(productVariant, eq(productVariant.id, cartItem.variantId))
