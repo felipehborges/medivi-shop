@@ -115,6 +115,12 @@ export type AdminProductDetail = {
   variants: AdminProductVariant[];
 };
 
+/** Lightweight lookup for callers that only need the name (e.g. the image upload alt-text fallback), not the full detail join. */
+export async function getProductName(db: DbClient, id: string): Promise<string | null> {
+  const [row] = await db.select({ name: product.name }).from(product).where(eq(product.id, id)).limit(1);
+  return row?.name ?? null;
+}
+
 export async function getProductForAdmin(db: DbClient, id: string): Promise<AdminProductDetail | null> {
   const [row] = await db.select().from(product).where(eq(product.id, id)).limit(1);
   if (!row) return null;

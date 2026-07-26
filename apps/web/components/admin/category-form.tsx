@@ -21,6 +21,8 @@ export function CategoryForm({
   onDone: () => void;
 }) {
   const [slugError, setSlugError] = useState<string | null>(null);
+  const [slugLocked, setSlugLocked] = useState(!!category);
+  const [confirmingSlugChange, setConfirmingSlugChange] = useState(false);
   const {
     register,
     handleSubmit,
@@ -67,7 +69,40 @@ export function CategoryForm({
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="cat-slug">Slug</Label>
-          <Input id="cat-slug" aria-invalid={!!errors.slug} {...register("slug")} />
+          <Input id="cat-slug" disabled={slugLocked} aria-invalid={!!errors.slug} {...register("slug")} />
+          {slugLocked && !confirmingSlugChange && (
+            <button
+              type="button"
+              className="self-start text-xs text-muted-foreground underline"
+              onClick={() => setConfirmingSlugChange(true)}
+            >
+              Change slug…
+            </button>
+          )}
+          {confirmingSlugChange && (
+            <div className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs">
+              <p>
+                Changing the slug can break existing links (bookmarks, shared URLs) — this won&apos;t redirect the
+                old one.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSlugLocked(false);
+                    setConfirmingSlugChange(false);
+                  }}
+                >
+                  Yes, unlock it
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => setConfirmingSlugChange(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
           {(errors.slug || slugError) && (
             <p role="alert" className="text-sm text-destructive">
               {errors.slug?.message ?? slugError}

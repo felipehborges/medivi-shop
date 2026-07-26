@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
 import { db } from "@medivi/db/client";
+import { getProductForAdmin } from "@medivi/db/queries";
 import { auditLog, category, product, user } from "@medivi/db/schema";
 
 const requireAdminMock = vi.fn();
@@ -28,6 +29,22 @@ let counter = 0;
 function unique(prefix: string) {
   counter += 1;
   return `${prefix}-${Date.now()}-${counter}`;
+}
+
+/**
+ * `image-size` only reads the PNG signature + IHDR chunk's declared
+ * width/height — it never decodes pixel data or checks chunk CRCs — so a
+ * structurally-minimal buffer with the right header bytes is enough to
+ * exercise the real dimension-validation path without a real image asset.
+ */
+function makeTestPng(width: number, height: number): Uint8Array<ArrayBuffer> {
+  const buffer = new Uint8Array(new ArrayBuffer(33));
+  buffer.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0); // PNG signature
+  buffer.set([0, 0, 0, 13], 8); // IHDR chunk length
+  buffer.set([0x49, 0x48, 0x44, 0x52], 12); // "IHDR"
+  new DataView(buffer.buffer).setUint32(16, width, false);
+  new DataView(buffer.buffer).setUint32(20, height, false);
+  return buffer;
 }
 
 let categoryId: string;
@@ -117,11 +134,46 @@ describe("uploadProductImageAction", () => {
     const formData = new FormData();
     formData.set("productId", created.id);
     formData.set("altText", "A sword");
-    formData.set("file", new File([new Uint8Array([1, 2, 3])], "a.png", { type: "image/png" }));
+    formData.set("file", new File([makeTestPng(300, 300)], "a.png", { type: "image/png" }));
 
     const result = await uploadProductImageAction(formData);
     expect(result).toEqual({ ok: true });
     expect(uploadMock).toHaveBeenCalledOnce();
+  });
+
+  it("falls back to the product name when alt text is omitted", async () => {
+    requireAdminMock.mockResolvedValue({ id: adminId });
+    const created = await createProductAction(baseInput());
+    if (!created.ok) throw new Error("setup failed");
+    createdProductIds.push(created.id);
+
+    uploadMock.mockResolvedValue({ url: "https://example.com/b.png" });
+
+    const formData = new FormData();
+    formData.set("productId", created.id);
+    formData.set("file", new File([makeTestPng(300, 300)], "b.png", { type: "image/png" }));
+
+    const result = await uploadProductImageAction(formData);
+    expect(result).toEqual({ ok: true });
+
+    const images = await getProductForAdmin(db, created.id);
+    expect(images?.images.find((i) => i.url === "https://example.com/b.png")?.altText).toBe("Test Sword");
+  });
+
+  it("rejects an image smaller than the minimum dimensions without calling the storage provider", async () => {
+    requireAdminMock.mockResolvedValue({ id: adminId });
+    const created = await createProductAction(baseInput());
+    if (!created.ok) throw new Error("setup failed");
+    createdProductIds.push(created.id);
+
+    const formData = new FormData();
+    formData.set("productId", created.id);
+    formData.set("altText", "A sword");
+    formData.set("file", new File([makeTestPng(10, 10)], "tiny.png", { type: "image/png" }));
+
+    const result = await uploadProductImageAction(formData);
+    expect(result).toEqual({ ok: false, reason: "invalid_dimensions" });
+    expect(uploadMock).not.toHaveBeenCalled();
   });
 
   it("rejects a disallowed file type without calling the storage provider", async () => {

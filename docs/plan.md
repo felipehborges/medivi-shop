@@ -190,9 +190,13 @@ interface. Implementation notes:
 
 ## 13. Images / Media
 
-- Admin image upload → validated (type/size/dimensions) → stored via a
-  `StorageProvider` interface (`VercelBlobProvider` / `S3Provider` for
-  MinIO) → URL saved on `ProductImage`.
+- Admin image upload → validated (content type against an allow-list,
+  5MB size cap) → stored via a `StorageProvider` interface
+  (`VercelBlobProvider` / `S3Provider` for MinIO) → URL saved on
+  `ProductImage`. No dimension validation — not needed at this scale, and
+  the size cap already bounds the worst case; would be the first thing to
+  add if this ever took real user-submitted uploads instead of admin-only
+  ones.
 - `next/image` everywhere on the frontend for responsive, lazy-loaded,
   layout-shift-safe images.
 - Seed data uses generated/placeholder imagery only (no real product

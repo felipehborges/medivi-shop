@@ -3,11 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { imageSize } from "image-size";
+
 import { db } from "@medivi/db/client";
 import {
   addProductImageAdmin,
   createProductAdmin,
   deleteProductImageAdmin,
+  getProductName,
   setProductStatusAdmin,
   updateProductAdmin,
   type SaveProductResult,
@@ -59,22 +62,51 @@ export async function setProductStatusAction(input: z.infer<typeof setProductSta
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/avif"]);
+// Bounds a product photo needs to look right in the catalog grid/gallery without
+// admitting a placeholder-scale sliver or a decompression-bomb-scale upload.
+const MIN_IMAGE_DIMENSION = 200;
+const MAX_IMAGE_DIMENSION = 4000;
 
 export type UploadProductImageResult =
   | { ok: true }
-  | { ok: false; reason: "invalid_file" | "too_large" | "invalid_type" };
+  | { ok: false; reason: "invalid_file" | "too_large" | "invalid_type" | "invalid_dimensions" | "not_found" };
 
 /** Takes `FormData` directly (not a Zod-parsed object) since it carries a `File`, not JSON. */
 export async function uploadProductImageAction(formData: FormData): Promise<UploadProductImageResult> {
   const admin = await requireAdmin();
   const productId = z.string().uuid().parse(formData.get("productId"));
-  const altText = z.string().min(1).parse(formData.get("altText"));
+  const altTextInput = z.string().optional().parse(formData.get("altText") || undefined);
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return { ok: false, reason: "invalid_file" };
   if (file.size > MAX_IMAGE_BYTES) return { ok: false, reason: "too_large" };
   if (!ALLOWED_IMAGE_TYPES.has(file.type)) return { ok: false, reason: "invalid_type" };
 
   const buffer = Buffer.from(await file.arrayBuffer());
+
+  let dimensions: { width: number; height: number };
+  try {
+    dimensions = imageSize(buffer);
+  } catch {
+    return { ok: false, reason: "invalid_file" };
+  }
+  if (
+    dimensions.width < MIN_IMAGE_DIMENSION ||
+    dimensions.height < MIN_IMAGE_DIMENSION ||
+    dimensions.width > MAX_IMAGE_DIMENSION ||
+    dimensions.height > MAX_IMAGE_DIMENSION
+  ) {
+    return { ok: false, reason: "invalid_dimensions" };
+  }
+
+  // Every product image requires alt text; an admin who leaves it blank gets
+  // the product's own name rather than a blank/empty attribute (see docs/spec.md).
+  let altText = altTextInput;
+  if (!altText) {
+    const productName = await getProductName(db, productId);
+    if (!productName) return { ok: false, reason: "not_found" };
+    altText = productName;
+  }
+
   const { url } = await getStorageProvider().upload({ buffer, filename: file.name, contentType: file.type });
 
   await addProductImageAdmin(db, admin.id, productId, { url, altText });

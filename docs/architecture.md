@@ -25,6 +25,7 @@ medivi-shop/
 │   ├── ui/                  # shadcn/ui-based primitives shared by app
 │   ├── payments/             # PaymentProvider interface + Stripe + Mock implementations
 │   ├── email/                 # EmailProvider interface + Resend + Console implementations + React Email templates
+│   ├── storage/                # StorageProvider interface + S3 (MinIO) + Vercel Blob implementations
 │   └── config/                # shared tsconfig, eslint, tailwind preset
 ├── docker/
 │   ├── docker-compose.yml    # Postgres + Redis + MinIO for local dev

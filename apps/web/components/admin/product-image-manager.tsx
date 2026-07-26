@@ -10,6 +10,28 @@ import { Label } from "@medivi/ui/components/ui/label";
 import type { AdminProductImage } from "@medivi/db/queries";
 import { deleteProductImageAction, uploadProductImageAction } from "@/lib/actions/admin-products";
 
+// Mirrors the server-side bounds in lib/actions/admin-products.ts — this
+// check is UX only (an instant error instead of a round trip for the common
+// case), the server re-validates and is the actual authority (see CLAUDE.md).
+const MIN_IMAGE_DIMENSION = 200;
+const MAX_IMAGE_DIMENSION = 4000;
+
+function readImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Could not read image dimensions"));
+    };
+    img.src = url;
+  });
+}
+
 export function ProductImageManager({
   productId,
   images,
@@ -25,8 +47,28 @@ export function ProductImageManager({
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setPending(true);
+
     const formData = new FormData(event.currentTarget);
+    const file = formData.get("file");
+    if (file instanceof File && file.size > 0) {
+      try {
+        const { width, height } = await readImageDimensions(file);
+        if (
+          width < MIN_IMAGE_DIMENSION ||
+          height < MIN_IMAGE_DIMENSION ||
+          width > MAX_IMAGE_DIMENSION ||
+          height > MAX_IMAGE_DIMENSION
+        ) {
+          setError(`Image must be between ${MIN_IMAGE_DIMENSION}×${MIN_IMAGE_DIMENSION} and ${MAX_IMAGE_DIMENSION}×${MAX_IMAGE_DIMENSION} pixels.`);
+          return;
+        }
+      } catch {
+        setError("Choose a valid image file.");
+        return;
+      }
+    }
+
+    setPending(true);
     formData.set("productId", productId);
     const result = await uploadProductImageAction(formData);
     setPending(false);
@@ -37,7 +79,11 @@ export function ProductImageManager({
           ? "Image must be 5MB or smaller."
           : result.reason === "invalid_type"
             ? "Use PNG, JPEG, WebP, or AVIF."
-            : "Choose an image file.",
+            : result.reason === "invalid_dimensions"
+              ? `Image must be between ${MIN_IMAGE_DIMENSION}×${MIN_IMAGE_DIMENSION} and ${MAX_IMAGE_DIMENSION}×${MAX_IMAGE_DIMENSION} pixels.`
+              : result.reason === "not_found"
+                ? "Product not found."
+                : "Choose an image file.",
       );
       return;
     }
@@ -76,7 +122,7 @@ export function ProductImageManager({
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="altText">Alt text</Label>
-          <Input id="altText" name="altText" required />
+          <Input id="altText" name="altText" placeholder="Defaults to the product name" />
         </div>
         <Button type="submit" disabled={pending}>
           {pending ? "Uploading…" : "Upload"}
