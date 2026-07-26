@@ -81,6 +81,16 @@ re-derive decisions already made there.
   a client form, put the type (and its Zod schema) in a plain module the
   action file imports from, and have the client import it from there too —
   never from the action file itself.
+- **drizzle-orm wraps the real postgres.js error in `.cause`.** A failed
+  query throws a `DrizzleQueryError` (message: `"Failed query: ..."`), not
+  the underlying `PostgresError` — the actual `code`/`constraint_name`
+  fields (`23505` unique violation, `23503` FK violation, `23514` check
+  violation) live on `err.cause`, not on `err` itself. Checking
+  `err.code`/`err.constraint_name` directly always misses and silently
+  rethrows instead of matching. Use the helpers in
+  `packages/db/src/lib/pg-errors.ts` (`isUniqueViolation` /
+  `isForeignKeyViolation` / `isCheckViolation`) rather than re-deriving this
+  — they already unwrap `.cause`.
 
 ## Commands
 
