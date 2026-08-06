@@ -91,6 +91,20 @@ re-derive decisions already made there.
   `packages/db/src/lib/pg-errors.ts` (`isUniqueViolation` /
   `isForeignKeyViolation` / `isCheckViolation`) rather than re-deriving this
   — they already unwrap `.cause`.
+- **Adding a new `loading.tsx` under `(account)` or `(admin)` gets stuck on
+  the fallback forever in this Next.js 16.2.11 + Turbopack dev setup** —
+  reproduced on a group-root `loading.tsx` and repeated it on individual
+  routes (`admin/orders`, `admin/users`, etc.), even a trivial
+  `<div>Loading…</div>`, and even after clearing `.next` and a full cold
+  server restart. The RSC payload for the real page is present in the HTML
+  (verifiable via `document.body.innerHTML`) but never swaps in for the
+  visible fallback — `pnpm build` and `next start` are unaffected, this is
+  dev-only. `(storefront)/catalog` and `(storefront)/search`'s pre-existing
+  `loading.tsx` files are unaffected (same Suspense/async-searchParams
+  shape), so the trigger is something specific to `(account)`/`(admin)`,
+  not `loading.tsx` in general — not root-caused. Until that's understood,
+  don't add `loading.tsx` under those two groups; empty/error states there
+  still work fine without one (see `docs/tasks.md` Phase 10.1).
 - **Better Auth's `emailAndPassword.requireEmailVerification: true` changes
   more than sign-in.** Three non-obvious consequences, found the hard way in
   Phase 8:
