@@ -4,6 +4,8 @@ import { db } from "@medivi/db/client";
 import { listCategoryTree, listProducts } from "@medivi/db/queries";
 import { env } from "@/lib/env";
 
+export const dynamic = "force-dynamic";
+
 const STATIC_ROUTES = ["", "/catalog", "/search", "/privacy", "/terms", "/shipping-returns"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
