@@ -15,7 +15,7 @@
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.1.0",
     "react": "^19.2.0",
-    "resend": "^6.18.0"
+    "resend": "^6.18.1"
   },
   "devDependencies": {
     "@medivi/config": "workspace:*",

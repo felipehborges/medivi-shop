@@ -12,7 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "stripe": "^22.3.2"
+    "stripe": "^22.4.0"
   },
   "devDependencies": {
     "@medivi/config": "workspace:*",
