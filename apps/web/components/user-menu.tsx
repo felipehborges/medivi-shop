@@ -26,6 +26,11 @@ export function UserMenu({
 
   async function handleSignOut() {
     await signOut();
+    // Unlike sign-in-form.tsx's push("/account"), "/" is always linked from
+    // the header logo, so Next has likely already prefetched it — while
+    // still signed in. push() alone would reuse that stale, signed-in
+    // prefetch. refresh() must come after the push completes, so it
+    // revalidates "/" as the now-current route instead of racing it.
     router.push("/");
     router.refresh();
   }

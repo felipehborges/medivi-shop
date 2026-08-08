@@ -279,7 +279,7 @@ interface. Implementation notes:
 ## 17. Deployment
 
 - **Primary:** Vercel git integration — preview deployment per PR, promote
-  to production on merge to `main`. Neon (Postgres), Upstash (Redis), Vercel
+  to production on merge to `master`. Neon (Postgres), Upstash (Redis), Vercel
   Blob (images), Resend (email).
 - **Self-host:** multistage `Dockerfile` for `apps/web` + `docker-compose.yml`
   (Postgres, Redis, MinIO) — same image, different env vars.
@@ -289,11 +289,12 @@ interface. Implementation notes:
 
 ## 18. CI/CD
 
-GitHub Actions, on every PR: install (pnpm, cached) → lint → typecheck
-(`tsc --noEmit`) → unit/component tests (Vitest) → build. On merge to `main`:
-the above, plus Playwright E2E against an ephemeral Postgres + mock payment
+GitHub Actions, on every PR: install (pnpm, cached) → audit (informational)
+→ lint → typecheck (`tsc --noEmit`) → unit/component tests (Vitest, against
+an ephemeral Postgres service) → build. On merge to `master`: the above,
+plus Playwright E2E against the same ephemeral Postgres + mock payment
 provider, then Vercel's git integration deploys. Dependabot enabled for
-dependency vulnerability alerts.
+dependency vulnerability alerts (`.github/dependabot.yml`).
 
 ## 19. Observability
 

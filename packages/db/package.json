@@ -7,7 +7,8 @@
     "./schema": "./src/schema/index.ts",
     "./client": "./src/client.ts",
     "./queries": "./src/queries/index.ts",
-    "./test": "./src/test/index.ts"
+    "./test": "./src/test/index.ts",
+    "./seed-catalog": "./src/seed-catalog.ts"
   },
   "scripts": {
     "lint": "eslint .",

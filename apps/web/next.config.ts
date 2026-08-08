@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Only for the self-host Docker image (see Dockerfile) — Vercel packages
+  // the app itself and doesn't want this output mode.
+  output: process.env.DOCKER_BUILD ? "standalone" : undefined,
   transpilePackages: ["@medivi/ui"],
   images: {
     remotePatterns: [

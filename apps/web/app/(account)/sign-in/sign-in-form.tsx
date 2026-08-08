@@ -45,8 +45,12 @@ export function SignInForm() {
       return;
     }
     await mergeCartOnLogin();
-    router.push("/account");
+    // `refresh()` must run before `push()` — the reverse order lets refresh's
+    // revalidation of the shared layout (needed so the header stops showing
+    // "Sign in") race the pending push and cancel its navigation, which
+    // silently strands the user back on the current page.
     router.refresh();
+    router.push("/account");
   }
 
   async function onResend() {
