@@ -12,6 +12,15 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 vi.mock("server-only", () => ({}));
+const providerMode = { value: "mock" as "mock" | "stripe" };
+vi.mock("@/lib/env", () => ({
+  env: {
+    get PAYMENT_PROVIDER() {
+      return providerMode.value;
+    },
+    NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+  },
+}));
 
 const sendEmailMock = vi.fn();
 vi.mock("@/lib/email", () => ({
@@ -76,6 +85,7 @@ beforeAll(async () => {
 afterEach(() => {
   redirectMock.mockClear();
   sendEmailMock.mockClear();
+  providerMode.value = "mock";
 });
 
 afterAll(async () => {
@@ -96,7 +106,7 @@ describe("approveMockPayment", () => {
     const { orderId, variantId } = await makeOrder(5, 2);
 
     await expect(
-      approveMockPayment({ orderId, redirectUrl: "http://localhost:3000/order/confirmation/" + orderId }),
+      approveMockPayment({ orderId, redirectPath: "/order/confirmation/" + orderId }),
     ).rejects.toThrow(/^REDIRECT:/);
 
     const [orderRow] = await db.select().from(order).where(eq(order.id, orderId));
@@ -113,10 +123,10 @@ describe("approveMockPayment", () => {
 
   it("is a no-op (but still redirects) when the order is no longer pending", async () => {
     const { orderId } = await makeOrder(5, 1);
-    await approveMockPayment({ orderId, redirectUrl: "http://localhost:3000/x" }).catch(() => {});
+    await approveMockPayment({ orderId, redirectPath: "/x" }).catch(() => {});
     sendEmailMock.mockClear();
 
-    await expect(approveMockPayment({ orderId, redirectUrl: "http://localhost:3000/x" })).rejects.toThrow(/^REDIRECT:/);
+    await expect(approveMockPayment({ orderId, redirectPath: "/x" })).rejects.toThrow(/^REDIRECT:/);
     const [orderRow] = await db.select().from(order).where(eq(order.id, orderId));
     expect(orderRow?.status).toBe("paid");
     expect(sendEmailMock).not.toHaveBeenCalled();
@@ -128,7 +138,7 @@ describe("declineMockPayment", () => {
     const { orderId } = await makeOrder(5, 1);
 
     await expect(
-      declineMockPayment({ orderId, redirectUrl: "http://localhost:3000/checkout" }),
+      declineMockPayment({ orderId, redirectPath: "/checkout" }),
     ).rejects.toThrow(/^REDIRECT:/);
 
     const [orderRow] = await db.select().from(order).where(eq(order.id, orderId));
@@ -137,5 +147,19 @@ describe("declineMockPayment", () => {
     const [paymentRow] = await db.select().from(payment).where(eq(payment.orderId, orderId));
     expect(paymentRow?.status).toBe("failed");
     expect(sendEmailMock).not.toHaveBeenCalled();
+  });
+
+  it("does not process payments when mock mode is disabled", async () => {
+    providerMode.value = "stripe";
+    await expect(
+      approveMockPayment({ orderId: "00000000-0000-4000-8000-000000000000", redirectPath: "/checkout" }),
+    ).rejects.toThrow("Mock checkout is disabled");
+    providerMode.value = "mock";
+  });
+
+  it("rejects external redirect targets", async () => {
+    await expect(
+      approveMockPayment({ orderId: "00000000-0000-4000-8000-000000000000", redirectPath: "//evil.example" }),
+    ).rejects.toThrow(/Redirect must be a same-origin path/);
   });
 });

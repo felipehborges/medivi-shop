@@ -6,13 +6,20 @@ import { z } from "zod";
 
 import { db } from "@medivi/db/client";
 import { fulfillPaidOrder, getOrderById, recordPaymentFailure } from "@medivi/db/queries";
+import { env } from "@/lib/env";
 import { sendOrderConfirmationEmail } from "@/lib/order-confirmation-email";
 import { logger } from "@/lib/logger";
 
 const mockActionSchema = z.object({
   orderId: z.string().uuid(),
-  redirectUrl: z.string().url(),
+  redirectPath: z.string().regex(/^\/(?![\\/])/, "Redirect must be a same-origin path"),
 });
+
+function requireMockProvider() {
+  if (env.PAYMENT_PROVIDER !== "mock") {
+    throw new Error("Mock checkout is disabled");
+  }
+}
 
 /**
  * Calls the exact same fulfillment function the Stripe webhook route calls
@@ -20,7 +27,8 @@ const mockActionSchema = z.object({
  * real webhook delivery, not a separate code path (see docs/architecture.md §5).
  */
 export async function approveMockPayment(input: z.infer<typeof mockActionSchema>) {
-  const { orderId, redirectUrl } = mockActionSchema.parse(input);
+  requireMockProvider();
+  const { orderId, redirectPath } = mockActionSchema.parse(input);
   const order = await getOrderById(db, orderId);
   if (order && order.status === "pending") {
     const outcome = await fulfillPaidOrder(db, {
@@ -33,11 +41,12 @@ export async function approveMockPayment(input: z.infer<typeof mockActionSchema>
     if (outcome.outcome === "paid") await sendOrderConfirmationEmail(orderId);
     revalidatePath("/", "layout");
   }
-  redirect(redirectUrl);
+  redirect(redirectPath);
 }
 
 export async function declineMockPayment(input: z.infer<typeof mockActionSchema>) {
-  const { orderId, redirectUrl } = mockActionSchema.parse(input);
+  requireMockProvider();
+  const { orderId, redirectPath } = mockActionSchema.parse(input);
   const order = await getOrderById(db, orderId);
   if (order && order.status === "pending") {
     await recordPaymentFailure(db, {
@@ -46,5 +55,5 @@ export async function declineMockPayment(input: z.infer<typeof mockActionSchema>
       orderId,
     });
   }
-  redirect(redirectUrl);
+  redirect(redirectPath);
 }

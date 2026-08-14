@@ -7,12 +7,12 @@ import { approveMockPayment, declineMockPayment } from "@/lib/actions/mock-check
 
 export function MockCheckoutActions({
   orderId,
-  successUrl,
-  cancelUrl,
+  successPath,
+  cancelPath,
 }: {
   orderId: string;
-  successUrl: string;
-  cancelUrl: string;
+  successPath: string;
+  cancelPath: string;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -22,14 +22,14 @@ export function MockCheckoutActions({
         type="button"
         variant="outline"
         disabled={isPending}
-        onClick={() => startTransition(() => declineMockPayment({ orderId, redirectUrl: cancelUrl }))}
+        onClick={() => startTransition(() => declineMockPayment({ orderId, redirectPath: cancelPath }))}
       >
         Decline
       </Button>
       <Button
         type="button"
         disabled={isPending}
-        onClick={() => startTransition(() => approveMockPayment({ orderId, redirectUrl: successUrl }))}
+        onClick={() => startTransition(() => approveMockPayment({ orderId, redirectPath: successPath }))}
       >
         Approve payment
       </Button>

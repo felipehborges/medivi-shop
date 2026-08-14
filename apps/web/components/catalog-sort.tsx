@@ -33,11 +33,15 @@ export function CatalogSort({
         id="sort"
         name="sort"
         defaultValue={searchParams.sort ?? (isSearching ? "" : "featured")}
-        className="h-9 rounded-md border border-input bg-transparent px-2.5 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+        className="h-9 rounded-md border border-input bg-background px-2.5 text-sm text-foreground shadow-xs outline-none [color-scheme:light] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:[color-scheme:dark]"
       >
-        {isSearching && <option value="">Relevance</option>}
+        {isSearching && (
+          <option className="bg-background text-foreground" value="">
+            Relevance
+          </option>
+        )}
         {SORT_OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option className="bg-background text-foreground" key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
