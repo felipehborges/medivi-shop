@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import type { Tx } from "../lib/db-client";
@@ -287,10 +287,87 @@ describe("fulfillPaidOrder", () => {
       const [variantRow] = await tx.select().from(productVariant).where(eq(productVariant.id, variant.id));
       expect(variantRow?.stock).toBe(0);
     });
+    });
   });
-});
 
-describe("recordPaymentFailure", () => {
+  it("does not decrement any stock when one line in a multi-item order is oversold", async () => {
+    await withTestTransaction(async (tx) => {
+      const u = await makeUser(tx);
+      const { variant: availableVariant } = await makeVariant(tx, 5);
+      const { variant: unavailableVariant } = await makeVariant(tx, 5);
+      const cartRow = await makeCartWithItem(tx, { userId: u.id }, availableVariant.id, 1, 1000);
+      await tx.insert(cartItem).values({
+        cartId: cartRow.id,
+        variantId: unavailableVariant.id,
+        quantity: 1,
+        priceSnapshotCents: 1000,
+      });
+
+      const created = await createOrder(tx, cartRow.id, { userId: u.id }, { shippingAddress, shippingCents: 500 });
+      if (!created.ok) throw new Error("expected order creation to succeed");
+      await createPayment(tx, {
+        orderId: created.orderId,
+        provider: "mock",
+        providerRef: `mock_${created.orderId}`,
+        amountCents: created.totalCents,
+      });
+      await tx.update(productVariant).set({ stock: 0 }).where(eq(productVariant.id, unavailableVariant.id));
+
+      const outcome = await fulfillPaidOrder(tx, {
+        eventId: unique("evt"),
+        provider: "mock",
+        orderId: created.orderId,
+        providerRef: `mock_${created.orderId}`,
+      });
+      expect(outcome).toEqual({ outcome: "oversold", unavailableVariantIds: [unavailableVariant.id] });
+
+      const variants = await tx
+        .select({ id: productVariant.id, stock: productVariant.stock })
+        .from(productVariant)
+        .where(inArray(productVariant.id, [availableVariant.id, unavailableVariant.id]));
+      expect(variants).toEqual(
+        expect.arrayContaining([
+          { id: availableVariant.id, stock: 5 },
+          { id: unavailableVariant.id, stock: 0 },
+        ]),
+      );
+
+      const logs = await tx
+        .select()
+        .from(inventoryLog)
+        .where(inArray(inventoryLog.variantId, [availableVariant.id, unavailableVariant.id]));
+      expect(logs).toHaveLength(0);
+    });
+  });
+
+  it("rejects a fulfillment event from a provider that does not own the payment", async () => {
+    await withTestTransaction(async (tx) => {
+      const u = await makeUser(tx);
+      const { variant } = await makeVariant(tx, 5);
+      const cartRow = await makeCartWithItem(tx, { userId: u.id }, variant.id, 1, 1000);
+      const created = await createOrder(tx, cartRow.id, { userId: u.id }, { shippingAddress, shippingCents: 500 });
+      if (!created.ok) throw new Error("expected order creation to succeed");
+      await createPayment(tx, {
+        orderId: created.orderId,
+        provider: "mock",
+        providerRef: `mock_${created.orderId}`,
+        amountCents: created.totalCents,
+      });
+
+      const outcome = await fulfillPaidOrder(tx, {
+        eventId: unique("evt"),
+        provider: "stripe",
+        orderId: created.orderId,
+        providerRef: "pi_unrelated",
+      });
+      expect(outcome).toEqual({ outcome: "invalid" });
+
+      const [variantRow] = await tx.select().from(productVariant).where(eq(productVariant.id, variant.id));
+      expect(variantRow?.stock).toBe(5);
+    });
+  });
+
+  describe("recordPaymentFailure", () => {
   it("marks the payment failed, leaves the order pending, and leaves the cart intact for a retry", async () => {
     await withTestTransaction(async (tx) => {
       const u = await makeUser(tx);

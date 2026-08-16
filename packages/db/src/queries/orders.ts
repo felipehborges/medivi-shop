@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 
 import type { DbClient } from "../lib/db-client";
 import {
@@ -293,7 +293,8 @@ export type FulfillEvent = {
 export type FulfillOutcome =
   | { outcome: "duplicate" }
   | { outcome: "paid" }
-  | { outcome: "oversold"; unavailableVariantIds: string[] };
+  | { outcome: "oversold"; unavailableVariantIds: string[] }
+  | { outcome: "invalid" };
 
 /**
  * The one place order/payment status flips to "paid" — called from the
@@ -303,10 +304,9 @@ export type FulfillOutcome =
  * webhook (or a double-clicked mock approval) is a no-op.
  *
  * The stock decrement is the real concurrency backstop (not just the
- * add-to-cart clamp): a guarded `UPDATE ... WHERE stock >= quantity` takes
- * a row lock, so two concurrent fulfillments on the same last-unit variant
- * serialize — the second sees the decremented stock and fails cleanly
- * instead of ever going negative.
+ * add-to-cart clamp): all affected variants are locked in a stable order
+ * before stock is checked or changed, so concurrent fulfillments serialize
+ * and a multi-line failure cannot partially decrement inventory.
  */
 export async function fulfillPaidOrder(db: DbClient, event: FulfillEvent): Promise<FulfillOutcome> {
   return db.transaction(async (tx) => {
@@ -317,49 +317,85 @@ export async function fulfillPaidOrder(db: DbClient, event: FulfillEvent): Promi
       .returning({ eventId: processedWebhookEvent.eventId });
     if (!inserted) return { outcome: "duplicate" };
 
+    const [orderRow] = await tx
+      .select({ cartId: order.cartId, status: order.status })
+      .from(order)
+      .where(eq(order.id, event.orderId))
+      .for("update");
+    if (!orderRow || orderRow.status !== "pending") return { outcome: "invalid" };
+
+    const [paymentRow] = await tx
+      .select({ id: payment.id, providerRef: payment.providerRef })
+      .from(payment)
+      .where(
+        and(
+          eq(payment.orderId, event.orderId),
+          eq(payment.provider, event.provider),
+          eq(payment.status, "requires_payment"),
+        ),
+      )
+      .orderBy(desc(payment.createdAt))
+      .limit(1)
+      .for("update");
+    if (!paymentRow || (event.provider === "mock" && paymentRow.providerRef !== event.providerRef)) {
+      return { outcome: "invalid" };
+    }
+
     const items = await tx
       .select({ variantId: orderItem.variantId, quantity: orderItem.quantity })
       .from(orderItem)
       .where(eq(orderItem.orderId, event.orderId));
+    if (items.length === 0) return { outcome: "invalid" };
 
-    const unavailableVariantIds: string[] = [];
+    const quantityByVariant = new Map<string, number>();
     for (const item of items) {
-      const [decremented] = await tx
-        .update(productVariant)
-        .set({ stock: sql`${productVariant.stock} - ${item.quantity}`, updatedAt: new Date() })
-        .where(and(eq(productVariant.id, item.variantId), gte(productVariant.stock, item.quantity)))
-        .returning({ id: productVariant.id });
-
-      if (!decremented) {
-        unavailableVariantIds.push(item.variantId);
-      } else {
-        await tx.insert(inventoryLog).values({
-          variantId: item.variantId,
-          change: -item.quantity,
-          reason: "order",
-          referenceId: event.orderId,
-        });
-      }
+      quantityByVariant.set(item.variantId, (quantityByVariant.get(item.variantId) ?? 0) + item.quantity);
     }
+
+    const variantIds = [...quantityByVariant.keys()].sort();
+    const variants = await tx
+      .select({ id: productVariant.id, stock: productVariant.stock })
+      .from(productVariant)
+      .where(inArray(productVariant.id, variantIds))
+      .orderBy(asc(productVariant.id))
+      .for("update");
+
+    const unavailableVariantIds = variantIds.filter((variantId) => {
+      const variant = variants.find((row) => row.id === variantId);
+      return !variant || variant.stock < quantityByVariant.get(variantId)!;
+    });
 
     if (unavailableVariantIds.length > 0) {
       await tx
         .update(payment)
         .set({ status: "failed", providerRef: event.providerRef, updatedAt: new Date() })
-        .where(eq(payment.orderId, event.orderId));
+        .where(eq(payment.id, paymentRow.id));
       return { outcome: "oversold", unavailableVariantIds };
+    }
+
+    for (const variantId of variantIds) {
+      const quantity = quantityByVariant.get(variantId)!;
+      await tx
+        .update(productVariant)
+        .set({ stock: sql`${productVariant.stock} - ${quantity}`, updatedAt: new Date() })
+        .where(eq(productVariant.id, variantId));
+      await tx.insert(inventoryLog).values({
+        variantId,
+        change: -quantity,
+        reason: "order",
+        referenceId: event.orderId,
+      });
     }
 
     await tx
       .update(payment)
       .set({ status: "succeeded", providerRef: event.providerRef, updatedAt: new Date() })
-      .where(eq(payment.orderId, event.orderId));
+      .where(eq(payment.id, paymentRow.id));
     await tx
       .update(order)
       .set({ status: "paid", updatedAt: new Date() })
-      .where(and(eq(order.id, event.orderId), eq(order.status, "pending")));
+      .where(eq(order.id, event.orderId));
 
-    const [orderRow] = await tx.select({ cartId: order.cartId }).from(order).where(eq(order.id, event.orderId)).limit(1);
     if (orderRow?.cartId) {
       await tx.delete(cartItem).where(eq(cartItem.cartId, orderRow.cartId));
     }

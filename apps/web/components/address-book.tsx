@@ -6,6 +6,7 @@ import { Badge } from "@medivi/ui/components/ui/badge";
 import { Button } from "@medivi/ui/components/ui/button";
 import type { Address } from "@medivi/db/queries";
 import { deleteAddressAction } from "@/lib/actions/addresses";
+import { EmptyState } from "@/components/empty-state";
 import { AddressForm } from "./address-form";
 
 export function AddressBook({ addresses }: { addresses: Address[] }) {
@@ -18,6 +19,13 @@ export function AddressBook({ addresses }: { addresses: Address[] }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {addresses.length === 0 && editingId !== "new" && (
+        <EmptyState
+          title="No addresses yet"
+          description="Add an address to speed up checkout next time."
+        />
+      )}
+
       {addresses.map((a) =>
         editingId === a.id ? (
           <AddressForm key={a.id} address={a} onDone={() => setEditingId(null)} />

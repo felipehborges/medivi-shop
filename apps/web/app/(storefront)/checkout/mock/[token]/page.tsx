@@ -3,9 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { db } from "@medivi/db/client";
-import { getOrderById } from "@medivi/db/queries";
+import { getLatestPaymentForOrder, getOrderById } from "@medivi/db/queries";
 import { formatPriceCents } from "@/lib/format";
 import { MockCheckoutActions } from "@/components/mock-checkout-actions";
+import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Mock Payment — Medivi Shop",
@@ -18,10 +19,21 @@ export default async function MockCheckoutPage({
   params: Promise<{ token: string }>;
   searchParams: Promise<{ successUrl?: string; cancelUrl?: string }>;
 }) {
+  if (env.PAYMENT_PROVIDER !== "mock") notFound();
+
   const { token: orderId } = await params;
   const { successUrl, cancelUrl } = await searchParams;
-  const order = await getOrderById(db, orderId);
-  if (!order || !successUrl || !cancelUrl) notFound();
+  const [order, latestPayment] = await Promise.all([getOrderById(db, orderId), getLatestPaymentForOrder(db, orderId)]);
+  if (!order || !successUrl || !cancelUrl || latestPayment?.provider !== "mock") notFound();
+
+  const appOrigin = new URL(env.NEXT_PUBLIC_APP_URL).origin;
+  const redirectPath = (url: string) => {
+    const parsed = new URL(url);
+    if (parsed.origin !== appOrigin) notFound();
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  };
+  const successPath = redirectPath(successUrl);
+  const cancelPath = redirectPath(cancelUrl);
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-16">
@@ -46,11 +58,11 @@ export default async function MockCheckoutPage({
       </div>
 
       {order.status === "pending" ? (
-        <MockCheckoutActions orderId={order.id} successUrl={successUrl} cancelUrl={cancelUrl} />
+        <MockCheckoutActions orderId={order.id} successPath={successPath} cancelPath={cancelPath} />
       ) : (
         <p className="text-sm text-muted-foreground">
           This order has already been processed.{" "}
-          <Link href={successUrl} className="underline">
+          <Link href={successPath} className="underline">
             Continue
           </Link>
         </p>

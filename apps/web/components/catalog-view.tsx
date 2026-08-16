@@ -93,7 +93,7 @@ export async function CatalogView({
   };
 
   return (
-    <div className="mx-auto flex max-w-6xl gap-8 px-4 py-8">
+    <div className="mx-auto flex w-full max-w-6xl gap-8 px-4 py-8">
       <aside className="hidden w-56 shrink-0 flex-col gap-8 md:flex">
         <CategorySidebar categories={categories} activeSlug={categorySlug} />
         <CatalogFilters basePath={basePath} searchParams={searchParams} materials={materials} />
