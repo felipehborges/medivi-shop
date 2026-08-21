@@ -1,8 +1,49 @@
 import type { Database } from "./client";
 import { category, product, productImage, productVariant } from "./schema";
 
-function placeholderImage(seed: string) {
-  return `https://picsum.photos/seed/${seed}/800/800`;
+const LOCAL_PRODUCT_IMAGE_SLUGS = new Set([
+  "iron-longsword",
+  "steel-broadsword",
+  "silver-rapier",
+  "twin-fang-daggers",
+  "dragonbone-greatsword",
+  "mithril-shortsword",
+  "wooden-buckler",
+  "iron-kite-shield",
+  "steel-tower-shield",
+  "oakheart-round-shield",
+  "dragonscale-shield",
+  "leather-cap",
+  "iron-helm",
+  "steel-great-helm",
+  "dragonscale-helm",
+  "leather-jerkin",
+  "chainmail-hauberk",
+  "steel-plate-cuirass",
+  "mithril-chestplate",
+  "travelers-cloak",
+  "rangers-hooded-cloak",
+  "shadowweave-cloak",
+  "royal-velvet-cloak",
+  "amulet-of-warding",
+  "ring-of-the-ember-king",
+  "shard-of-the-frostfall-blade",
+  "idol-of-the-sunken-temple",
+  "minor-healing-potion",
+  "greater-healing-potion",
+  "elixir-of-swift-feet",
+  "potion-of-giant-strength",
+  "antidote-vial",
+  "guild-standard-banner",
+  "crimson-war-banner",
+  "emblem-of-the-silver-watch",
+  "tattered-field-banner",
+]);
+
+function catalogImageUrl(seed: string) {
+  return LOCAL_PRODUCT_IMAGE_SLUGS.has(seed)
+    ? `/products/${seed}.png`
+    : `https://picsum.photos/seed/${seed}/800/800`;
 }
 
 type VariantSeed = {
@@ -464,7 +505,7 @@ export async function seedCatalog(db: Database): Promise<void> {
 
     await db.insert(productImage).values({
       productId: row.id,
-      url: placeholderImage(p.slug),
+      url: catalogImageUrl(p.slug),
       altText: p.name,
       position: 0,
     });
