@@ -458,7 +458,11 @@ export async function seedCatalog(db: Database): Promise<void> {
     const row = first(
       await db
         .insert(category)
-        .values({ name: c.name, slug: c.slug })
+        .values({
+          name: c.name,
+          slug: c.slug,
+          imageUrl: `/categories/${c.slug}.png`,
+        })
         .returning({ id: category.id, slug: category.slug }),
       c.slug,
     );
