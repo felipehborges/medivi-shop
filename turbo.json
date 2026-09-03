@@ -3,6 +3,7 @@
   "ui": "tui",
   "globalEnv": [
     "DATABASE_URL",
+    "MEDIVI_DATABASE_URL",
     "BETTER_AUTH_SECRET",
     "NEXT_PUBLIC_APP_URL"
   ],
