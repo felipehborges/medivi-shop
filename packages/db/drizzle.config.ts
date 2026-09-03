@@ -8,6 +8,7 @@ export default defineConfig({
   casing: "snake_case",
   dbCredentials: {
     url:
+      process.env.MEDIVI_DATABASE_URL ??
       process.env.DATABASE_URL ??
       "postgresql://medivi:medivi@localhost:5432/medivi_shop",
   },
