@@ -28,4 +28,4 @@
 - [x] 5.2 Add an end-to-end smoke test for browse-to-confirmation and verify the demo performs no application data requests
 - [x] 5.3 Document the independent demo/full-stack workflows and configure the demo for Vercel deployment
 - [x] 5.4 Run lint, typecheck, tests, and production build for the demo
-- [ ] 5.5 Deploy the demo to the user's existing Vercel account and validate the public URL
+- [x] 5.5 Deploy the demo to the user's existing Vercel account and validate the public URL
