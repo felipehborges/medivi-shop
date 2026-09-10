@@ -1,0 +1,7 @@
+@import "@medivi/ui/globals.css";
+@source "../**/*.{ts,tsx}";
+
+html { scroll-behavior: smooth; }
+body { min-height: 100vh; }
+.demo-grid { background-image: radial-gradient(circle at 1px 1px, color-mix(in oklch, var(--foreground) 10%, transparent) 1px, transparent 0); background-size: 24px 24px; }
+.hero-vignette { background: linear-gradient(90deg, oklch(0.13 0.02 260 / 94%) 0%, oklch(0.13 0.02 260 / 72%) 48%, transparent 100%); }
