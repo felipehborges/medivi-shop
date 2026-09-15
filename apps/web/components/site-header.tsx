@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 import { Button } from "@medivi/ui/components/ui/button";
 import { ThemeToggle } from "@medivi/ui/components/theme-toggle";
@@ -10,8 +11,13 @@ import { UserMenu } from "./user-menu";
 import { CategoryNav } from "./category-nav";
 import { SearchBar } from "./search-bar";
 import { CartDrawer } from "./cart-drawer";
+import brandMark from "@/app/icon.png";
+import { getLocale, getTranslations } from "@/lib/i18n";
+import { LanguageSwitcher } from "./language-switcher";
 
 export async function SiteHeader() {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
   const [session, categories, cart] = await Promise.all([
     getSession(),
     listCategoryTree(db),
@@ -21,8 +27,13 @@ export async function SiteHeader() {
   return (
     <header className="border-b border-border">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="font-display text-lg font-semibold">
-          Medivi Shop
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-display text-lg font-semibold"
+          aria-label={t("header.home")}
+        >
+          <Image src={brandMark} alt="" width={34} height={34} priority />
+          <span>Medivi Shop</span>
         </Link>
 
         <div className="hidden flex-1 justify-center px-8 sm:flex">
@@ -30,6 +41,7 @@ export async function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-2">
+          <LanguageSwitcher locale={locale} label={t("language.label")} />
           <ThemeToggle />
           <CartDrawer cart={cart} />
           {session ? (
@@ -40,10 +52,10 @@ export async function SiteHeader() {
           ) : (
             <>
               <Button variant="ghost" asChild>
-                <Link href="/sign-in">Sign in</Link>
+                <Link href="/sign-in">{t("header.signIn")}</Link>
               </Button>
               <Button asChild>
-                <Link href="/sign-up">Sign up</Link>
+                <Link href="/sign-up">{t("header.signUp")}</Link>
               </Button>
             </>
           )}
