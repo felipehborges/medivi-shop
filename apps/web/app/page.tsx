@@ -9,6 +9,7 @@ import { FeaturedCategories } from "@/components/featured-categories";
 import { PromoSections } from "@/components/promo-sections";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@medivi/ui/components/ui/button";
+import { getLocale, getTranslations } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Medivi Shop — Gear for Adventurers",
@@ -16,6 +17,8 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
+  const locale = await getLocale();
+  const t = getTranslations(locale);
   const [heroBanners, promoBanners, categories, featured, session] = await Promise.all([
     listActiveBanners(db, "hero"),
     listActiveBanners(db, "category"),
@@ -27,7 +30,7 @@ export default async function Home() {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-8">
-      <h1 className="font-display text-2xl">Gear for Adventurers</h1>
+      <h1 className="font-display text-2xl">{t("home.title")}</h1>
 
       <HeroCarousel banners={heroBanners} />
 
@@ -36,10 +39,10 @@ export default async function Home() {
       <section aria-labelledby="featured-products-heading">
         <div className="mb-4 flex items-center justify-between">
           <h2 id="featured-products-heading" className="font-display text-2xl">
-            Featured gear
+            {t("home.featured")}
           </h2>
           <Button variant="ghost" asChild>
-            <Link href="/catalog">Browse all</Link>
+            <Link href="/catalog">{t("home.browseAll")}</Link>
           </Button>
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

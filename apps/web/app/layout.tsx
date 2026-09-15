@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { AnalyticsBeacon } from "@/components/analytics-beacon";
 import { JsonLd } from "@/components/json-ld";
 import { env } from "@/lib/env";
+import { getLocale } from "@/lib/i18n";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,14 +30,16 @@ export const metadata: Metadata = {
   description: "Gear for adventurers — swords, armor, relics, and more.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} h-full antialiased`}
     >
