@@ -60,6 +60,9 @@ jobs:
       - name: Run migrations
         run: pnpm db:migrate
 
+      - name: Seed catalog for integration tests
+        run: pnpm db:seed
+
       - name: Audit dependencies
         # Informational, not a gate — Dependabot (.github/dependabot.yml) is
         # the mechanism for actually acting on these; several existing
