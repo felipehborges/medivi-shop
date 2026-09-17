@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { addItem, cartTotal, initialState, parseState, STORAGE_KEY, updateItem, type DemoOrder, type DemoState } from "@/lib/store";
+import { rememberMousePosition } from "@/lib/pointer-position";
 import { useDemoMessage } from "./locale-provider";
 
 type DemoContextValue = {
@@ -25,6 +26,15 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DemoState>(initialState);
   const stateRef = useRef<DemoState>(initialState);
   const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    document.addEventListener("pointermove", rememberMousePosition, { passive: true });
+    document.addEventListener("pointerdown", rememberMousePosition, { passive: true });
+    return () => {
+      document.removeEventListener("pointermove", rememberMousePosition);
+      document.removeEventListener("pointerdown", rememberMousePosition);
+    };
+  }, []);
 
   /* eslint-disable react-hooks/set-state-in-effect -- hydration intentionally syncs from external browser storage */
   useEffect(() => {

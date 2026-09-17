@@ -41,3 +41,12 @@ test("Portuguese selection translates interactive feedback", async ({ page }) =>
   await page.getByRole("button", { name: "Restaurar padrões" }).click();
   await expect(page.getByText("Dados da demo restaurados")).toBeVisible();
 });
+
+test("product zoom activates when navigation leaves the cursor over the image", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/catalog");
+  await page.getByRole("link", { name: /Dragonbone Greatsword Featured/i }).click({ position: { x: 100, y: 100 } });
+
+  await expect(page.getByRole("heading", { name: "Dragonbone Greatsword" })).toBeVisible();
+  await expect(page.getByTestId("product-zoom-lens")).toBeVisible();
+});
