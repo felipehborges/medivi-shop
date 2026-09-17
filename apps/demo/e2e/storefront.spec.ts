@@ -50,3 +50,18 @@ test("product zoom activates when navigation leaves the cursor over the image", 
   await expect(page.getByRole("heading", { name: "Dragonbone Greatsword" })).toBeVisible();
   await expect(page.getByTestId("product-zoom-lens")).toBeVisible();
 });
+
+test("every gallery selection retains zoom for its product", async ({ page }) => {
+  for (const [slug, name] of [["dragonbone-greatsword", "Dragonbone Greatsword"], ["shadowweave-cloak", "Shadowweave Cloak"]]) {
+    await page.goto(`/product/${slug}`);
+    const gallery = page.getByRole("group", { name: "Product images" });
+    for (let image = 1; image <= 3; image++) {
+      const selection = gallery.getByRole("button", { name: `Show image ${image} of 3` });
+      await selection.click();
+      await expect(selection).toHaveAttribute("aria-pressed", "true");
+      const mainImage = page.getByRole("img", { name: `${name} — Photo ${image}` });
+      await mainImage.hover();
+      await expect(page.getByTestId("product-zoom-lens")).toBeVisible();
+    }
+  }
+});

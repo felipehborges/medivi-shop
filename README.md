@@ -6,7 +6,7 @@ Loja de fantasia criada como projeto de portfólio. A [demo pública](https://me
 
 ## O que explorar
 
-- Catálogo com busca, filtros, ordenação, variantes e páginas de produto.
+- Catálogo com busca, filtros, ordenação, variantes e páginas de produto com galeria e zoom. As fotos da galeria se repetem nesta demo até haver imagens de outros ângulos.
 - Carrinho e favoritos persistidos localmente, com fluxo de pagamento aprovado ou recusado de forma simulada.
 - Painel administrativo de demonstração para alterar a visibilidade dos produtos e conferir pedidos simulados.
 - Interface responsiva, temas claro e escuro e alternância entre português e inglês.
