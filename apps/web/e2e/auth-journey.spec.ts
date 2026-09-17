@@ -13,8 +13,9 @@ test("sign up shows a check-your-email state instead of auto sign-in", async ({ 
 
   await expect(page.getByText(email)).toBeVisible();
   await expect(
-    page.getByText(/Check your email for a verification link, then sign in\./),
+    page.getByText(/Check your email for a verification link, then/),
   ).toBeVisible();
+  await expect(page.locator("p").filter({ hasText: email }).getByRole("link", { name: "sign in" })).toBeVisible();
 
   // Better Auth's requireEmailVerification means no session was created.
   await page.goto("/account");
