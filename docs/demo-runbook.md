@@ -39,9 +39,18 @@ Import this GitHub repository as a new or existing Vercel project and set:
 - Build Command: automatic (`pnpm build` in the selected workspace)
 - Environment Variables: none
 
+If publishing under a custom domain, set `NEXT_PUBLIC_DEMO_URL` to its full
+HTTPS origin (for example, `https://shop.example.com`) before building. It is
+used for the static sitemap, robots file, and social metadata. The default is
+`https://medivi-shop.vercel.app`.
+
 Preview the generated URL before attaching a custom domain. Because the
 application is a static export, rollback is simply promoting the previous
 Vercel deployment.
+
+Check the home page, a product URL after a browser reload, the checkout
+simulation, and the social preview on the final deployment URL. The CI workflow
+runs the demo's Playwright purchase journey on pushes and pull requests.
 
 ## Resuming the commercial version
 

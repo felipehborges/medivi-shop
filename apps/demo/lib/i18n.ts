@@ -18,6 +18,7 @@ export const messages = {
     portfolio: "Portfolio experience", portfolioText: "Built to showcase the product",
     choosePath: "Choose your path", shopCollection: "Shop by collection", viewAll: "View all →",
     masterwork: "Masterwork selection", featured: "Featured artifacts",
+    addedToCart: "Added to your demo cart", demoRestored: "Demo data restored",
   },
   "pt-BR": {
     demoBanner: "DEMONSTRAÇÃO INTERATIVA DE PORTFÓLIO · SEM COMPRAS OU PAGAMENTOS REAIS",
@@ -36,6 +37,7 @@ export const messages = {
     portfolio: "Experiência de portfólio", portfolioText: "Criada para apresentar o produto",
     choosePath: "Escolha seu caminho", shopCollection: "Compre por coleção", viewAll: "Ver tudo →",
     masterwork: "Seleção de obras-primas", featured: "Artefatos em destaque",
+    addedToCart: "Adicionado ao carrinho da demo", demoRestored: "Dados da demo restaurados",
   },
 } as const;
 
@@ -54,6 +56,7 @@ export const demoCopy: Record<string, string> = {
   "Wishlist": "Favoritos", "Saved only on this device.": "Salvos apenas neste dispositivo.", "No favorites yet": "Ainda não há favoritos", "Find an artifact": "Encontrar um artefato",
   "Demo products": "Produtos da demo", "Cart value": "Valor do carrinho", "Local orders": "Pedidos locais", "LOCAL DEMO": "DEMO LOCAL", "No shared changes": "Alterações não compartilhadas", "Merchant command center": "Painel do lojista", "Preview operational UI safely with browser-local state.": "Explore o painel com segurança usando dados locais do navegador.", "View storefront": "Ver loja", "Restore defaults": "Restaurar padrões", "Catalog visibility": "Visibilidade do catálogo", "Changes appear only in this browser.": "As alterações aparecem apenas neste navegador.", "Hidden": "Oculto", "Visible": "Visível", "Show": "Mostrar", "Hide": "Ocultar", "Recent demo orders": "Pedidos recentes da demo", "Simulated paid": "Pagamento simulado", "lines": "linhas", "Complete the checkout simulation to populate this panel.": "Conclua a simulação de checkout para preencher este painel.", "Commercial version preserved": "Versão comercial preservada", "The real database, authentication, payments, email, storage and audit implementation remain in": "O banco de dados, a autenticação, os pagamentos, os e-mails, o armazenamento e a auditoria reais permanecem em", "This portfolio app does not import them.": "Esta demo de portfólio não usa esses recursos.",
   "Medivi home": "Página inicial da Medivi",
+  "Hover over the image to inspect details.": "Passe o cursor sobre a imagem para ver os detalhes.",
   "404 · Lost realm": "404 · Reino perdido", "This path is not on the map": "Este caminho não está no mapa", "Return home": "Voltar ao início",
   "Opening the armory…": "Abrindo o arsenal…", "Loading demo order…": "Carregando pedido da demo…",
   "Swords": "Espadas", "Shields": "Escudos", "Armor": "Armaduras", "Cloaks": "Capas", "Relics": "Relíquias", "Potions": "Poções",

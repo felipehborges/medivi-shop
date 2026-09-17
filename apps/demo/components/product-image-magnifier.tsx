@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useI18n } from "./locale-provider";
 
 const LENS_SIZE = 176;
 const ZOOM_SCALE = 2.5;
 
 export function ProductImageMagnifier({ src, alt }: { src: string; alt: string }) {
+  const { tr } = useI18n();
   const [isHovering, setIsHovering] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
@@ -22,7 +24,7 @@ export function ProductImageMagnifier({ src, alt }: { src: string; alt: string }
 
   return (
     <div
-      aria-label={`${alt}. Hover over the image to inspect details.`}
+      aria-label={`${alt}. ${tr("Hover over the image to inspect details.")}`}
       onMouseEnter={(e) => {
         updatePosition(e);
         setIsHovering(true);

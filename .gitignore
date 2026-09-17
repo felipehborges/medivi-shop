@@ -40,3 +40,7 @@ pnpm-debug.log*
 
 # docker volumes (local only)
 docker/.data/
+
+# local working artifacts
+.codex-build/
+output/

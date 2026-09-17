@@ -27,3 +27,17 @@ test("browse-to-confirmation stays in the browser", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Cart" })).toHaveText("");
   expect(applicationRequests).toEqual([]);
 });
+
+test("Portuguese selection translates interactive feedback", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => { document.cookie = "medivi-locale=pt-BR; path=/"; });
+  await page.goto("/product/dragonbone-greatsword");
+
+  await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
+  await page.getByRole("button", { name: "Adicionar ao carrinho" }).click();
+  await expect(page.getByText("Adicionado ao carrinho da demo")).toBeVisible();
+
+  await page.goto("/admin");
+  await page.getByRole("button", { name: "Restaurar padrões" }).click();
+  await expect(page.getByText("Dados da demo restaurados")).toBeVisible();
+});

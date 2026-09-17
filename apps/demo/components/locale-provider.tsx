@@ -37,3 +37,8 @@ export function useI18n() {
   const formatMoney = (cents: number) => new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(cents / 100);
   return { locale, setLocale, t, tr: (text: string) => translateDemo(locale, text), formatMoney };
 }
+
+export function useDemoMessage() {
+  const { locale } = useI18n();
+  return (key: MessageKey) => messages[locale][key];
+}
