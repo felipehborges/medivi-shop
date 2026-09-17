@@ -11,7 +11,6 @@ import { UserMenu } from "./user-menu";
 import { CategoryNav } from "./category-nav";
 import { SearchBar } from "./search-bar";
 import { CartDrawer } from "./cart-drawer";
-import brandMark from "@/app/icon.png";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { LanguageSwitcher } from "./language-switcher";
 
@@ -32,7 +31,7 @@ export async function SiteHeader() {
           className="flex items-center gap-2 font-display text-lg font-semibold"
           aria-label={t("header.home")}
         >
-          <Image src={brandMark} alt="" width={34} height={34} priority />
+          <Image src="/icon.png" alt="" width={34} height={34} priority />
           <span>Medivi Shop</span>
         </Link>
 
