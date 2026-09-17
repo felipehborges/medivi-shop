@@ -1,5 +1,6 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -47,7 +48,7 @@ export function CartLineItem({ item }: { item: CartItemDetail }) {
         <div className="flex items-start justify-between gap-2">
           <div>
             <Link href={`/product/${item.productSlug}`} className="font-medium hover:underline">
-              {item.productName}
+              <LocalizedText text={item.productName} />
             </Link>
             <p className="text-sm text-muted-foreground">{variantLabel(item)}</p>
           </div>

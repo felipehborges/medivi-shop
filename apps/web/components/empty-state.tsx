@@ -1,3 +1,7 @@
+"use client";
+
+import { useLocale } from "./locale-provider";
+
 export function EmptyState({
   title,
   description,
@@ -5,10 +9,11 @@ export function EmptyState({
   title: string;
   description: string;
 }) {
+  const { tr } = useLocale();
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed py-24 text-center">
-      <p className="font-display text-lg">{title}</p>
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <p className="font-display text-lg">{tr(title)}</p>
+      <p className="text-sm text-muted-foreground">{tr(description)}</p>
     </div>
   );
 }

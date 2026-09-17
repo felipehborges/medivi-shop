@@ -1,12 +1,15 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import type { CategoryOption } from "@medivi/db/queries";
 import { productSchema, type ProductFormInput } from "@/lib/schemas/product";
@@ -52,7 +55,7 @@ export function ProductForm({
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4 rounded-xl border p-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name"><LocalizedText text={"Name"} /></Label>
           <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
           {errors.name && (
             <p role="alert" className="text-sm text-destructive">
@@ -61,7 +64,7 @@ export function ProductForm({
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="slug">Slug</Label>
+          <Label htmlFor="slug"><LocalizedText text={"Slug"} /></Label>
           <Input id="slug" disabled={slugLocked} aria-invalid={!!errors.slug} {...register("slug")} />
           {slugLocked && !confirmingSlugChange && (
             <button
@@ -69,15 +72,12 @@ export function ProductForm({
               className="self-start text-xs text-muted-foreground underline"
               onClick={() => setConfirmingSlugChange(true)}
             >
-              Change slug…
-            </button>
+              <LocalizedText text={"Change slug… "} /></button>
           )}
           {confirmingSlugChange && (
             <div className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs">
               <p>
-                Changing the slug can break existing links (bookmarks, shared URLs) — this won&apos;t redirect the
-                old one.
-              </p>
+                <LocalizedText text={"Changing the slug can break existing links (bookmarks, shared URLs) — this won't redirect the old one. "} /></p>
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -88,11 +88,9 @@ export function ProductForm({
                     setConfirmingSlugChange(false);
                   }}
                 >
-                  Yes, unlock it
-                </Button>
+                  <LocalizedText text={"Yes, unlock it "} /></Button>
                 <Button type="button" size="sm" variant="ghost" onClick={() => setConfirmingSlugChange(false)}>
-                  Cancel
-                </Button>
+                  <LocalizedText text={"Cancel "} /></Button>
               </div>
             </div>
           )}
@@ -106,9 +104,9 @@ export function ProductForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="categoryId">Category</Label>
+          <Label htmlFor="categoryId"><LocalizedText text={"Category"} /></Label>
           <select id="categoryId" className={selectClassName} {...register("categoryId")}>
-            <option value="">Choose a category</option>
+            <option value=""><LocalizedText text={"Choose a category"} /></option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.parentId ? `— ${c.name}` : c.name}
@@ -122,13 +120,13 @@ export function ProductForm({
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="material">Material</Label>
+          <Label htmlFor="material"><LocalizedText text={"Material"} /></Label>
           <Input id="material" {...register("material")} />
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="description">Short description</Label>
+        <Label htmlFor="description"><LocalizedText text={"Short description"} /></Label>
         <textarea
           id="description"
           rows={2}
@@ -138,7 +136,7 @@ export function ProductForm({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="longDescription">Long description</Label>
+        <Label htmlFor="longDescription"><LocalizedText text={"Long description"} /></Label>
         <textarea
           id="longDescription"
           rows={5}
@@ -149,7 +147,7 @@ export function ProductForm({
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="basePriceCents">Base price (cents)</Label>
+          <Label htmlFor="basePriceCents"><LocalizedText text={"Base price (cents)"} /></Label>
           <Input
             id="basePriceCents"
             type="number"
@@ -165,37 +163,35 @@ export function ProductForm({
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="status">Status</Label>
+          <Label htmlFor="status"><LocalizedText text={"Status"} /></Label>
           <select id="status" className={selectClassName} {...register("status")}>
-            <option value="draft">Draft</option>
-            <option value="active">Active</option>
-            <option value="archived">Archived</option>
+            <option value="draft"><LocalizedText text={"Draft"} /></option>
+            <option value="active"><LocalizedText text={"Active"} /></option>
+            <option value="archived"><LocalizedText text={"Archived"} /></option>
           </select>
         </div>
         <label className="flex items-center gap-2 self-end pb-2 text-sm">
           <input type="checkbox" {...register("isFeatured")} />
-          Featured
-        </label>
+          <LocalizedText text={"Featured "} /></label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="seoTitle">SEO title</Label>
+          <Label htmlFor="seoTitle"><LocalizedText text={"SEO title"} /></Label>
           <Input id="seoTitle" {...register("seoTitle")} />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="seoDescription">SEO description</Label>
+          <Label htmlFor="seoDescription"><LocalizedText text={"SEO description"} /></Label>
           <Input id="seoDescription" {...register("seoDescription")} />
         </div>
       </div>
 
       <div className="flex gap-2">
         <Button type="submit" disabled={isSubmitting}>
-          {product ? "Save changes" : "Create product"}
+          <LocalizedText text={product ? "Save changes" : "Create product"} />
         </Button>
         <Button type="button" variant="outline" onClick={() => router.push("/admin/products")}>
-          Cancel
-        </Button>
+          <LocalizedText text={"Cancel "} /></Button>
       </div>
     </form>
   );

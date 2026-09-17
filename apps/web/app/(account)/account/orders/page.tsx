@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -17,7 +18,7 @@ export default async function OrderHistoryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-3xl">Order history</h1>
+      <h1 className="font-display text-3xl"><LocalizedText text={"Order history"} /></h1>
 
       {orders.length === 0 ? (
         <EmptyState title="No orders yet" description="Your past orders will show up here." />
@@ -33,7 +34,7 @@ export default async function OrderHistoryPage() {
                   <p className="font-medium">{order.orderNumber}</p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(order.createdAt).toLocaleDateString()} · {order.itemCount}{" "}
-                    {order.itemCount === 1 ? "item" : "items"}
+                    <LocalizedText text={order.itemCount === 1 ? "item" : "items"} />
                   </p>
                 </div>
                 <div className="flex items-center gap-4">

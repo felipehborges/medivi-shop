@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -54,11 +57,9 @@ export function BannerManager({ banners }: { banners: AdminBanner[] }) {
             </div>
             <div className="flex shrink-0 gap-2">
               <Button type="button" variant="outline" size="sm" onClick={() => setEditingId(b.id)}>
-                Edit
-              </Button>
+                <LocalizedText text={"Edit "} /></Button>
               <Button type="button" variant="ghost" size="sm" onClick={() => handleDelete(b.id)}>
-                Delete
-              </Button>
+                <LocalizedText text={"Delete "} /></Button>
             </div>
           </div>
         ),
@@ -73,8 +74,7 @@ export function BannerManager({ banners }: { banners: AdminBanner[] }) {
         />
       ) : (
         <Button type="button" variant="outline" onClick={() => setEditingId("new")}>
-          Add banner
-        </Button>
+          <LocalizedText text={"Add banner "} /></Button>
       )}
     </div>
   );

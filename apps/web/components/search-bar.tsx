@@ -4,8 +4,9 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SearchIcon } from "lucide-react";
 
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Button } from "@medivi/ui/components/ui/button";
+import { useLocale } from "./locale-provider";
 
 const DEBOUNCE_MS = 400;
 
@@ -16,6 +17,7 @@ const DEBOUNCE_MS = 400;
  * docs/architecture.md §7).
  */
 export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
+  const { tr } = useLocale();
   const router = useRouter();
   const [value, setValue] = useState(initialQuery);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -45,8 +47,8 @@ export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
         name="q"
         value={value}
         onChange={handleChange}
-        placeholder="Search the shop…"
-        aria-label="Search products"
+        placeholder={tr("Search the shop…")}
+        aria-label={tr("Search products")}
         className="pr-9"
       />
       <Button
@@ -54,7 +56,7 @@ export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
         size="icon-sm"
         variant="ghost"
         className="absolute top-1/2 right-1 -translate-y-1/2"
-        aria-label="Search"
+        aria-label={tr("Search")}
       >
         <SearchIcon className="size-4" />
       </Button>

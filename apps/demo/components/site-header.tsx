@@ -12,7 +12,7 @@ import { LanguageSwitcher } from "./language-switcher";
 import { useI18n } from "./locale-provider";
 
 export function SiteHeader() {
-  const { t } = useI18n();
+  const { t, tr } = useI18n();
   const links = [{ href: "/catalog", label: t("armory") }, { href: "/catalog?category=relics", label: t("relics") }, { href: "/catalog?category=potions", label: t("potions") }, { href: "/admin", label: t("admin") }];
   const { cartCount, state } = useDemo();
   const [open, setOpen] = useState(false);
@@ -20,7 +20,7 @@ export function SiteHeader() {
     <div className="bg-primary px-4 py-2 text-center text-xs font-semibold tracking-wide text-primary-foreground">{t("demoBanner")}</div>
     <header className="sticky top-0 z-40 border-b bg-background/92 backdrop-blur-xl">
       <div className="mx-auto flex h-18 max-w-7xl items-center gap-5 px-4 sm:px-6">
-        <Link href="/" className="mr-auto flex items-center gap-2 font-display text-xl font-bold tracking-widest" aria-label="Medivi home"><Image src={brandMark} alt="" width={38} height={38} priority /><span>MEDIVI</span></Link>
+        <Link href="/" className="mr-auto flex items-center gap-2 font-display text-xl font-bold tracking-widest" aria-label={tr("Medivi home")}><Image src={brandMark} alt="" width={38} height={38} priority /><span>MEDIVI</span></Link>
         <nav className="hidden items-center gap-7 md:flex">{links.map((link) => <Link className="text-sm font-medium text-muted-foreground transition hover:text-foreground" href={link.href} key={link.href}>{link.label}</Link>)}</nav>
         <LanguageSwitcher /><ThemeToggle />
         <Button variant="ghost" size="icon" asChild aria-label={t("wishlist")}><Link href="/wishlist" className="relative"><Heart /><span className="absolute -right-1 -top-1 text-[10px] font-bold">{state.wishlist.length || ""}</span></Link></Button>

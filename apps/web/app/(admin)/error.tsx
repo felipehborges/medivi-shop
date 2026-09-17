@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useEffect } from "react";
 import Link from "next/link";
 
@@ -20,14 +23,13 @@ export default function AdminError({
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-32 text-center">
-      <h1 className="font-display text-3xl">Something went wrong</h1>
+      <h1 className="font-display text-3xl"><LocalizedText text={"Something went wrong"} /></h1>
       <p className="max-w-md text-muted-foreground">
-        This admin page failed to load. Give it another try, or head back to the dashboard.
-      </p>
+        <LocalizedText text={"This admin page failed to load. Give it another try, or head back to the dashboard. "} /></p>
       <div className="flex gap-2">
-        <Button onClick={() => reset()}>Try again</Button>
+        <Button onClick={() => reset()}><LocalizedText text={"Try again"} /></Button>
         <Button variant="outline" asChild>
-          <Link href="/admin">Back to dashboard</Link>
+          <Link href="/admin"><LocalizedText text={"Back to dashboard"} /></Link>
         </Button>
       </div>
     </div>

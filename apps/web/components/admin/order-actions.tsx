@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -43,12 +46,10 @@ export function OrderActions({ orderId, status }: { orderId: string; status: Ord
       <div className="flex gap-2">
         {status === "paid" && (
           <Button type="button" size="sm" disabled={pending} onClick={onFulfill}>
-            Mark fulfilled
-          </Button>
+            <LocalizedText text={"Mark fulfilled "} /></Button>
         )}
         <Button type="button" size="sm" variant="outline" disabled={pending} onClick={onRefund}>
-          Refund
-        </Button>
+          <LocalizedText text={"Refund "} /></Button>
       </div>
       {error && (
         <p role="alert" className="text-sm text-destructive">

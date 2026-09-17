@@ -1,10 +1,11 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 
 import { db } from "@medivi/db/client";
 import { listUsersAdmin } from "@medivi/db/queries";
 import { Badge } from "@medivi/ui/components/ui/badge";
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { requireAdmin } from "@/lib/auth-guards";
 import { CatalogPagination } from "@/components/catalog-pagination";
 import { UserRoleButton } from "@/components/admin/user-role-button";
@@ -21,18 +22,16 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-3xl">Users</h1>
+      <h1 className="font-display text-3xl"><LocalizedText text={"Users"} /></h1>
 
       <form method="GET" className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
           <label htmlFor="search" className="text-xs text-muted-foreground">
-            Email
-          </label>
+            <LocalizedText text={"Email "} /></label>
           <Input id="search" name="search" defaultValue={params.search} placeholder="Search by email…" className="w-64" />
         </div>
         <Button type="submit" size="sm">
-          Search
-        </Button>
+          <LocalizedText text={"Search "} /></Button>
       </form>
 
       {result.items.length === 0 ? (
@@ -42,10 +41,10 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
           <table className="w-full text-sm">
             <thead className="border-b bg-muted/50 text-left">
               <tr>
-                <th className="p-3">Name</th>
-                <th className="p-3">Email</th>
-                <th className="p-3">Role</th>
-                <th className="p-3">Joined</th>
+                <th className="p-3"><LocalizedText text={"Name"} /></th>
+                <th className="p-3"><LocalizedText text={"Email"} /></th>
+                <th className="p-3"><LocalizedText text={"Role"} /></th>
+                <th className="p-3"><LocalizedText text={"Joined"} /></th>
                 <th className="p-3" />
               </tr>
             </thead>

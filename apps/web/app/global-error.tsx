@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useEffect } from "react";
 import { captureException } from "@/lib/monitoring";
 
@@ -23,8 +26,8 @@ export default function GlobalError({
     <html lang="en">
       <body>
         <div style={{ padding: "4rem", textAlign: "center" }}>
-          <h1>Something went wrong</h1>
-          <button onClick={() => reset()}>Try again</button>
+          <h1><LocalizedText text={"Something went wrong"} /></h1>
+          <button onClick={() => reset()}><LocalizedText text={"Try again"} /></button>
         </div>
       </body>
     </html>

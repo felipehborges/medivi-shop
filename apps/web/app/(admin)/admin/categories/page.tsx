@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 
 import { db } from "@medivi/db/client";
@@ -13,7 +14,7 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-3xl">Categories</h1>
+      <h1 className="font-display text-3xl"><LocalizedText text={"Categories"} /></h1>
       <CategoryManager categories={categories} />
     </div>
   );

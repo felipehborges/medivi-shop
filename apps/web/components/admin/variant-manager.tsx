@@ -1,10 +1,13 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import type { AdminProductVariant } from "@medivi/db/queries";
 import { formatPriceCents } from "@/lib/format";
@@ -50,11 +53,9 @@ function VariantStockControl({ productId, variant }: { productId: string; varian
           className="w-20"
         />
         <Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => adjust("restock", 1)}>
-          Restock +
-        </Button>
+          <LocalizedText text={"Restock + "} /></Button>
         <Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => adjust("adjustment", -1)}>
-          Adjust −
-        </Button>
+          <LocalizedText text={"Adjust − "} /></Button>
       </div>
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
     </div>
@@ -102,17 +103,17 @@ export function VariantManager({ productId, variants }: { productId: string; var
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border p-6">
-      <h2 className="font-display text-xl">Variants</h2>
+      <h2 className="font-display text-xl"><LocalizedText text={"Variants"} /></h2>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="border-b text-left">
             <tr>
-              <th className="p-2">Name</th>
-              <th className="p-2">SKU</th>
-              <th className="p-2">Price override</th>
-              <th className="p-2">Stock</th>
-              <th className="p-2">Adjust stock</th>
+              <th className="p-2"><LocalizedText text={"Name"} /></th>
+              <th className="p-2"><LocalizedText text={"SKU"} /></th>
+              <th className="p-2"><LocalizedText text={"Price override"} /></th>
+              <th className="p-2"><LocalizedText text={"Stock"} /></th>
+              <th className="p-2"><LocalizedText text={"Adjust stock"} /></th>
               <th className="p-2" />
             </tr>
           </thead>
@@ -128,8 +129,7 @@ export function VariantManager({ productId, variants }: { productId: string; var
                 </td>
                 <td className="p-2">
                   <Button type="button" size="sm" variant="outline" onClick={() => onDelete(variant.id)}>
-                    Delete
-                  </Button>
+                    <LocalizedText text={"Delete "} /></Button>
                 </td>
               </tr>
             ))}
@@ -139,15 +139,15 @@ export function VariantManager({ productId, variants }: { productId: string; var
 
       <form onSubmit={onAdd} className="flex flex-wrap items-end gap-3 border-t pt-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="variant-name">Name</Label>
+          <Label htmlFor="variant-name"><LocalizedText text={"Name"} /></Label>
           <Input id="variant-name" value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="variant-sku">SKU</Label>
+          <Label htmlFor="variant-sku"><LocalizedText text={"SKU"} /></Label>
           <Input id="variant-sku" value={sku} onChange={(e) => setSku(e.target.value)} required />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="variant-price">Price override (cents)</Label>
+          <Label htmlFor="variant-price"><LocalizedText text={"Price override (cents)"} /></Label>
           <Input
             id="variant-price"
             type="number"
@@ -158,8 +158,7 @@ export function VariantManager({ productId, variants }: { productId: string; var
           />
         </div>
         <Button type="submit" disabled={pending}>
-          Add variant
-        </Button>
+          <LocalizedText text={"Add variant "} /></Button>
       </form>
       {error && (
         <p role="alert" className="text-sm text-destructive">

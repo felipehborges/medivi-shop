@@ -1,12 +1,15 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import type { CartDetail } from "@medivi/db/queries";
 import { formatPriceCents } from "@/lib/format";
@@ -65,7 +68,7 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-6">
         {isGuest && (
           <div className="flex flex-col gap-2">
-            <Label htmlFor="guestEmail">Email</Label>
+            <Label htmlFor="guestEmail"><LocalizedText text={"Email"} /></Label>
             <Input
               id="guestEmail"
               type="email"
@@ -83,10 +86,10 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
         )}
 
         <fieldset className="flex flex-col gap-4">
-          <legend className="mb-1 font-display text-lg">Shipping address</legend>
+          <legend className="mb-1 font-display text-lg"><LocalizedText text={"Shipping address"} /></legend>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="fullName">Full name</Label>
+            <Label htmlFor="fullName"><LocalizedText text={"Full name"} /></Label>
             <Input
               id="fullName"
               autoComplete="name"
@@ -102,7 +105,7 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="line1">Street address</Label>
+            <Label htmlFor="line1"><LocalizedText text={"Street address"} /></Label>
             <Input
               id="line1"
               autoComplete="address-line1"
@@ -118,13 +121,13 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="line2">Apartment, suite, etc. (optional)</Label>
+            <Label htmlFor="line2"><LocalizedText text={"Apartment, suite, etc. (optional)"} /></Label>
             <Input id="line2" autoComplete="address-line2" {...register("shippingAddress.line2")} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="city">City</Label>
+              <Label htmlFor="city"><LocalizedText text={"City"} /></Label>
               <Input
                 id="city"
                 autoComplete="address-level2"
@@ -139,7 +142,7 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="region">State / region</Label>
+              <Label htmlFor="region"><LocalizedText text={"State / region"} /></Label>
               <Input
                 id="region"
                 autoComplete="address-level1"
@@ -157,7 +160,7 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="postalCode">Postal code</Label>
+              <Label htmlFor="postalCode"><LocalizedText text={"Postal code"} /></Label>
               <Input
                 id="postalCode"
                 autoComplete="postal-code"
@@ -172,7 +175,7 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="country">Country</Label>
+              <Label htmlFor="country"><LocalizedText text={"Country"} /></Label>
               <Input
                 id="country"
                 autoComplete="country-name"
@@ -191,7 +194,7 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 font-display text-lg">Shipping method</legend>
+          <legend className="mb-1 font-display text-lg"><LocalizedText text={"Shipping method"} /></legend>
           {SHIPPING_METHODS.map((method) => (
             <label
               key={method.id}
@@ -218,7 +221,7 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
       </form>
 
       <div className="flex flex-col gap-4">
-        <h2 className="font-display text-lg">Order summary</h2>
+        <h2 className="font-display text-lg"><LocalizedText text={"Order summary"} /></h2>
         <ul className="flex flex-col gap-3">
           {cart.items.map((item) => (
             <li key={item.id} className="flex justify-between text-sm">
@@ -231,15 +234,15 @@ export function CheckoutForm({ cart, userEmail }: { cart: CartDetail; userEmail:
         </ul>
         <div className="flex flex-col gap-1 border-t pt-3 text-sm">
           <div className="flex justify-between">
-            <span>Subtotal</span>
+            <span><LocalizedText text={"Subtotal"} /></span>
             <span>{formatPriceCents(cart.subtotalCents)}</span>
           </div>
           <div className="flex justify-between">
-            <span>Shipping</span>
+            <span><LocalizedText text={"Shipping"} /></span>
             <span>{formatPriceCents(shippingCents)}</span>
           </div>
           <div className="flex justify-between font-medium">
-            <span>Total</span>
+            <span><LocalizedText text={"Total"} /></span>
             <span className="font-display text-lg">{formatPriceCents(totalCents)}</span>
           </div>
         </div>

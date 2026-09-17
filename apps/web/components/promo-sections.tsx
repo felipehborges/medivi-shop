@@ -10,9 +10,9 @@ export function PromoSections({ banners }: { banners: ActiveBanner[] }) {
   return (
     <section aria-label="Promotions" className="grid gap-4 sm:grid-cols-2">
       {banners.map((banner) => (
-        <div key={banner.id} className="relative isolate overflow-hidden rounded-xl bg-muted">
+        <div key={banner.id} className="store-promo group relative isolate overflow-hidden rounded-xl bg-muted">
           <div className="relative aspect-[16/9] w-full">
-            <Image src={banner.imageUrl} alt="" fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />
+            <Image src={banner.imageUrl} alt="" fill sizes="(min-width: 640px) 50vw, 100vw" className="store-promo-image object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             <div className="absolute inset-0 flex flex-col items-start justify-end gap-2 p-5">
               <h3 className="font-display text-xl text-white">{banner.title}</h3>

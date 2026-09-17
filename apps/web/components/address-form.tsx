@@ -1,10 +1,13 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import type { Address } from "@medivi/db/queries";
 import { addressSchema, type AddressInput } from "@/lib/schemas/address";
@@ -43,7 +46,7 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone: ()
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-3 rounded-xl border p-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="fullName">Full name</Label>
+        <Label htmlFor="fullName"><LocalizedText text={"Full name"} /></Label>
         <Input
           id="fullName"
           autoComplete="name"
@@ -59,7 +62,7 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone: ()
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="line1">Street address</Label>
+        <Label htmlFor="line1"><LocalizedText text={"Street address"} /></Label>
         <Input
           id="line1"
           autoComplete="address-line1"
@@ -75,13 +78,13 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone: ()
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="line2">Apartment, suite, etc. (optional)</Label>
+        <Label htmlFor="line2"><LocalizedText text={"Apartment, suite, etc. (optional)"} /></Label>
         <Input id="line2" autoComplete="address-line2" {...register("line2")} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="city">City</Label>
+          <Label htmlFor="city"><LocalizedText text={"City"} /></Label>
           <Input
             id="city"
             autoComplete="address-level2"
@@ -96,7 +99,7 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone: ()
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="region">State / region</Label>
+          <Label htmlFor="region"><LocalizedText text={"State / region"} /></Label>
           <Input
             id="region"
             autoComplete="address-level1"
@@ -114,7 +117,7 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone: ()
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="postalCode">Postal code</Label>
+          <Label htmlFor="postalCode"><LocalizedText text={"Postal code"} /></Label>
           <Input
             id="postalCode"
             autoComplete="postal-code"
@@ -129,7 +132,7 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone: ()
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="country">Country</Label>
+          <Label htmlFor="country"><LocalizedText text={"Country"} /></Label>
           <Input
             id="country"
             autoComplete="country-name"
@@ -147,16 +150,14 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone: ()
 
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" {...register("isDefault")} />
-        Set as default
-      </label>
+        <LocalizedText text={"Set as default "} /></label>
 
       <div className="flex gap-2">
         <Button type="submit" disabled={isSubmitting}>
-          {address ? "Save changes" : "Add address"}
+          <LocalizedText text={address ? "Save changes" : "Add address"} />
         </Button>
         <Button type="button" variant="outline" onClick={onDone}>
-          Cancel
-        </Button>
+          <LocalizedText text={"Cancel "} /></Button>
       </div>
     </form>
   );

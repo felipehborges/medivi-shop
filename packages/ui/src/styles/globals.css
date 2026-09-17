@@ -6,6 +6,32 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@keyframes language-menu-enter {
+  from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes language-menu-exit {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+
+.language-select-content[data-state="open"] {
+  animation: language-menu-enter 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.language-select-content[data-side="bottom"] {
+  translate: 0 0;
+}
+
+.language-select-content[data-state="closed"] {
+  animation: language-menu-exit 120ms ease-in both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .language-select-content[data-state] { animation: none; }
+}
+
 /*
  * Medivi Shop theme — "Parchment" (light) / "Torch-lit" (dark).
  * Every text-on-fill pair below was checked against WCAG 2.2 AA (4.5:1)
@@ -14,7 +40,7 @@
  */
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --font-display: var(--font-cinzel);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -57,19 +83,19 @@
   --card-foreground: oklch(0.22 0.02 260);
   --popover: oklch(0.99 0.01 85);
   --popover-foreground: oklch(0.22 0.02 260);
-  --primary: oklch(0.28 0.03 250);
-  --primary-foreground: oklch(0.98 0.01 85);
-  --secondary: oklch(0.78 0.1 75);
-  --secondary-foreground: oklch(0.22 0.02 260);
+  --primary: oklch(0.68 0.12 75);
+  --primary-foreground: oklch(0.2 0.025 260);
+  --secondary: oklch(0.91 0.025 85);
+  --secondary-foreground: oklch(0.27 0.025 260);
   --muted: oklch(0.93 0.01 85);
   --muted-foreground: oklch(0.45 0.02 85);
-  --accent: oklch(0.48 0.19 25);
+  --accent: oklch(0.47 0.16 30);
   --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.88 0.015 85);
-  --input: oklch(0.88 0.015 85);
-  --ring: oklch(0.28 0.03 250);
+  --border: oklch(0.84 0.025 85);
+  --input: oklch(0.84 0.025 85);
+  --ring: oklch(0.64 0.11 75);
 }
 
 /* Torch-lit (dark) */
@@ -107,5 +133,16 @@
   h3,
   h4 {
     @apply font-display;
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--primary), transparent 65%);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    a, button, input, select, [data-slot="dropdown-menu-content"], [data-slot="select-content"] {
+      transition-duration: 160ms;
+      transition-timing-function: ease-out;
+    }
   }
 }

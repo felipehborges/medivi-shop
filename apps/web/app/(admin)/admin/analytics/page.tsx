@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -50,28 +51,28 @@ export default async function AdminAnalyticsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-display text-3xl">Analytics</h1>
+      <h1 className="font-display text-3xl"><LocalizedText text={"Analytics"} /></h1>
 
       <section className="flex flex-col gap-4 rounded-xl border p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="font-display text-xl">Revenue — last 30 days</h2>
+          <h2 className="font-display text-xl"><LocalizedText text={"Revenue — last 30 days"} /></h2>
           <div className="flex gap-6 text-right">
             <div>
-              <p className="text-xs text-muted-foreground">Revenue</p>
+              <p className="text-xs text-muted-foreground"><LocalizedText text={"Revenue"} /></p>
               <p className="font-display text-2xl">{formatPriceCents(totalRevenueCents)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Orders</p>
+              <p className="text-xs text-muted-foreground"><LocalizedText text={"Orders"} /></p>
               <p className="font-display text-2xl">{totalOrders}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Avg. order value</p>
+              <p className="text-xs text-muted-foreground"><LocalizedText text={"Avg. order value"} /></p>
               <p className="font-display text-2xl">{formatPriceCents(averageOrderValueCents)}</p>
             </div>
           </div>
         </div>
         {revenue.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No paid orders in this window yet.</p>
+          <p className="text-sm text-muted-foreground"><LocalizedText text={"No paid orders in this window yet."} /></p>
         ) : (
           <div className="flex h-32 items-end gap-1" aria-hidden="true">
             {revenue.map((point) => (
@@ -88,16 +89,16 @@ export default async function AdminAnalyticsPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="flex flex-col gap-4 rounded-xl border p-6">
-          <h2 className="font-display text-xl">Top products</h2>
+          <h2 className="font-display text-xl"><LocalizedText text={"Top products"} /></h2>
           {topProducts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No sales yet.</p>
+            <p className="text-sm text-muted-foreground"><LocalizedText text={"No sales yet."} /></p>
           ) : (
             <table className="w-full text-sm">
               <thead className="border-b text-left text-muted-foreground">
                 <tr>
-                  <th className="py-1">Product</th>
-                  <th className="py-1">Units</th>
-                  <th className="py-1">Revenue</th>
+                  <th className="py-1"><LocalizedText text={"Product"} /></th>
+                  <th className="py-1"><LocalizedText text={"Units"} /></th>
+                  <th className="py-1"><LocalizedText text={"Revenue"} /></th>
                 </tr>
               </thead>
               <tbody>
@@ -118,9 +119,9 @@ export default async function AdminAnalyticsPage() {
         </section>
 
         <section className="flex flex-col gap-4 rounded-xl border p-6">
-          <h2 className="font-display text-xl">Low stock</h2>
+          <h2 className="font-display text-xl"><LocalizedText text={"Low stock"} /></h2>
           {lowStock.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nothing running low.</p>
+            <p className="text-sm text-muted-foreground"><LocalizedText text={"Nothing running low."} /></p>
           ) : (
             <ul className="flex flex-col gap-2 text-sm">
               {lowStock.map((v) => (
@@ -128,7 +129,7 @@ export default async function AdminAnalyticsPage() {
                   <Link href={`/admin/products/${v.productId}`} className="hover:underline">
                     {v.productName} — {v.variantName}
                   </Link>
-                  <Badge variant={v.stock === 0 ? "destructive" : "secondary"}>{v.stock} left</Badge>
+                  <Badge variant={v.stock === 0 ? "destructive" : "secondary"}>{v.stock} <LocalizedText text={"left"} /></Badge>
                 </li>
               ))}
             </ul>
@@ -137,12 +138,11 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       <section className="flex flex-col gap-4 rounded-xl border p-6">
-        <h2 className="font-display text-xl">Conversion funnel — last 30 days</h2>
+        <h2 className="font-display text-xl"><LocalizedText text={"Conversion funnel — last 30 days"} /></h2>
         <p className="text-xs text-muted-foreground">
-          Distinct visitor sessions reaching each step, not raw event counts.
-        </p>
+          <LocalizedText text={"Distinct visitor sessions reaching each step, not raw event counts. "} /></p>
         {funnel.pageViews === 0 ? (
-          <p className="text-sm text-muted-foreground">No visits recorded in this window yet.</p>
+          <p className="text-sm text-muted-foreground"><LocalizedText text={"No visits recorded in this window yet."} /></p>
         ) : (
           <div className="flex flex-col gap-3">
             <FunnelStep label="Page views" count={funnel.pageViews} ofTotal={funnel.pageViews} />
@@ -154,7 +154,7 @@ export default async function AdminAnalyticsPage() {
       </section>
 
       <section className="flex flex-col gap-4 rounded-xl border p-6">
-        <h2 className="font-display text-xl">Recent orders</h2>
+        <h2 className="font-display text-xl"><LocalizedText text={"Recent orders"} /></h2>
         <ul className="flex flex-col gap-2 text-sm">
           {recentOrders.items.map((o) => (
             <li key={o.id} className="flex items-center justify-between border-b py-1 last:border-0">

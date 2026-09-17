@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -5,7 +6,7 @@ import { db } from "@medivi/db/client";
 import { listProductsAdmin, type AdminProductListParams } from "@medivi/db/queries";
 import { Button } from "@medivi/ui/components/ui/button";
 import { Badge } from "@medivi/ui/components/ui/badge";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { requireAdmin } from "@/lib/auth-guards";
 import { formatPriceCents } from "@/lib/format";
 import { CatalogPagination } from "@/components/catalog-pagination";
@@ -30,40 +31,37 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl">Products</h1>
+        <h1 className="font-display text-3xl"><LocalizedText text={"Products"} /></h1>
         <Button asChild>
-          <Link href="/admin/products/new">New product</Link>
+          <Link href="/admin/products/new"><LocalizedText text={"New product"} /></Link>
         </Button>
       </div>
 
       <form method="GET" className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
           <label htmlFor="search" className="text-xs text-muted-foreground">
-            Search
-          </label>
+            <LocalizedText text={"Search "} /></label>
           <Input id="search" name="search" defaultValue={params.search} placeholder="Product name…" className="w-56" />
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="status" className="text-xs text-muted-foreground">
-            Status
-          </label>
+            <LocalizedText text={"Status "} /></label>
           <select
             id="status"
             name="status"
             defaultValue={params.status ?? ""}
             className="h-9 rounded-md border border-input bg-transparent px-2.5 text-sm shadow-xs outline-none dark:bg-input/30"
           >
-            <option value="">All</option>
-            <option value="draft">Draft</option>
-            <option value="active">Active</option>
-            <option value="archived">Archived</option>
+            <option value=""><LocalizedText text={"All"} /></option>
+            <option value="draft"><LocalizedText text={"Draft"} /></option>
+            <option value="active"><LocalizedText text={"Active"} /></option>
+            <option value="archived"><LocalizedText text={"Archived"} /></option>
           </select>
         </div>
         <Button type="submit" size="sm">
-          Filter
-        </Button>
+          <LocalizedText text={"Filter "} /></Button>
         <Button type="button" variant="ghost" size="sm" asChild>
-          <Link href="/admin/products">Clear</Link>
+          <Link href="/admin/products"><LocalizedText text={"Clear"} /></Link>
         </Button>
       </form>
 
@@ -74,11 +72,11 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <table className="w-full text-sm">
             <thead className="border-b bg-muted/50 text-left">
               <tr>
-                <th className="p-3">Product</th>
-                <th className="p-3">Category</th>
-                <th className="p-3">Price</th>
-                <th className="p-3">Stock</th>
-                <th className="p-3">Status</th>
+                <th className="p-3"><LocalizedText text={"Product"} /></th>
+                <th className="p-3"><LocalizedText text={"Category"} /></th>
+                <th className="p-3"><LocalizedText text={"Price"} /></th>
+                <th className="p-3"><LocalizedText text={"Stock"} /></th>
+                <th className="p-3"><LocalizedText text={"Status"} /></th>
                 <th className="p-3" />
               </tr>
             </thead>

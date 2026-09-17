@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import Link from "next/link";
 
 import { Button, buttonVariants } from "@medivi/ui/components/ui/button";
@@ -51,17 +52,15 @@ export function CatalogPagination({
   return (
     <nav aria-label="Pagination" className="flex items-center justify-center gap-2">
       <PaginationLink href={hrefForPage(basePath, searchParams, page - 1)} disabled={page <= 1}>
-        Previous
-      </PaginationLink>
+        <LocalizedText text={"Previous "} /></PaginationLink>
       <span className="text-sm text-muted-foreground">
-        Page {page} of {totalPages}
+        <LocalizedText text={"Page "} />{page} <LocalizedText text={"of"} />{totalPages}
       </span>
       <PaginationLink
         href={hrefForPage(basePath, searchParams, page + 1)}
         disabled={page >= totalPages}
       >
-        Next
-      </PaginationLink>
+        <LocalizedText text={"Next "} /></PaginationLink>
     </nav>
   );
 }

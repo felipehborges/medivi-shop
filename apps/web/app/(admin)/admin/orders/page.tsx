@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -25,11 +26,11 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-3xl">Orders</h1>
+      <h1 className="font-display text-3xl"><LocalizedText text={"Orders"} /></h1>
 
       <div className="flex flex-wrap gap-2">
         <Button asChild variant={!status ? "default" : "outline"} size="sm">
-          <Link href="/admin/orders">All</Link>
+          <Link href="/admin/orders"><LocalizedText text={"All"} /></Link>
         </Button>
         {STATUSES.map((s) => (
           <Button key={s} asChild variant={status === s ? "default" : "outline"} size="sm">
@@ -47,11 +48,11 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
           <table className="w-full text-sm">
             <thead className="border-b bg-muted/50 text-left">
               <tr>
-                <th className="p-3">Order</th>
-                <th className="p-3">Customer</th>
-                <th className="p-3">Total</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Placed</th>
+                <th className="p-3"><LocalizedText text={"Order"} /></th>
+                <th className="p-3"><LocalizedText text={"Customer"} /></th>
+                <th className="p-3"><LocalizedText text={"Total"} /></th>
+                <th className="p-3"><LocalizedText text={"Status"} /></th>
+                <th className="p-3"><LocalizedText text={"Placed"} /></th>
               </tr>
             </thead>
             <tbody>

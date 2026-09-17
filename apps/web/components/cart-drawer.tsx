@@ -17,12 +17,14 @@ import type { CartDetail } from "@medivi/db/queries";
 import { CartLineItem } from "./cart-line-item";
 import { CartSummary } from "./cart-summary";
 import { EmptyState } from "./empty-state";
+import { useLocale } from "./locale-provider";
 
 export function CartDrawer({ cart }: { cart: CartDetail }) {
+  const { locale, tr } = useLocale();
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Cart, ${cart.itemCount} items`} className="relative">
+        <Button variant="ghost" size="icon" aria-label={locale === "pt-BR" ? `Carrinho, ${cart.itemCount} itens` : `Cart, ${cart.itemCount} items`} className="relative">
           <ShoppingBagIcon className="size-4" />
           {cart.itemCount > 0 && (
             <Badge className="absolute top-0.5 right-0.5 size-4 justify-center rounded-full p-0 text-[10px]">
@@ -33,13 +35,13 @@ export function CartDrawer({ cart }: { cart: CartDetail }) {
       </SheetTrigger>
       <SheetContent className="flex flex-col">
         <SheetHeader>
-          <SheetTitle>Your Cart</SheetTitle>
+          <SheetTitle>{tr("Your Cart")}</SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto px-4">
           {cart.items.length === 0 ? (
             <EmptyState
-              title="Your cart is empty"
-              description="Add something from the catalog to get started."
+              title={tr("Your cart is empty")}
+              description={tr("Add something from the catalog to get started.")}
             />
           ) : (
             <div className="flex flex-col gap-4">
@@ -53,7 +55,7 @@ export function CartDrawer({ cart }: { cart: CartDetail }) {
           <SheetFooter>
             <CartSummary subtotalCents={cart.subtotalCents} />
             <Button asChild>
-              <Link href="/cart">View cart</Link>
+              <Link href="/cart">{tr("View cart")}</Link>
             </Button>
           </SheetFooter>
         )}

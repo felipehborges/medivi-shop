@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -21,13 +24,11 @@ export function ProductStatusButton({ id, status }: { id: string; status: Produc
   if (status === "archived") {
     return (
       <Button size="sm" variant="outline" disabled={pending} onClick={() => setStatus("draft")}>
-        Restore
-      </Button>
+        <LocalizedText text={"Restore "} /></Button>
     );
   }
   return (
     <Button size="sm" variant="outline" disabled={pending} onClick={() => setStatus("archived")}>
-      Archive
-    </Button>
+      <LocalizedText text={"Archive "} /></Button>
   );
 }

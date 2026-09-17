@@ -15,6 +15,7 @@ export function HeroCarousel({ banners }: { banners: ActiveBanner[] }) {
 
   useEffect(() => {
     if (banners.length < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = setInterval(() => {
       setIndex((i) => (i + 1) % banners.length);
     }, ROTATE_INTERVAL_MS);
@@ -28,7 +29,7 @@ export function HeroCarousel({ banners }: { banners: ActiveBanner[] }) {
   return (
     <section
       aria-label="Featured promotions"
-      className="relative isolate overflow-hidden rounded-xl bg-muted"
+      className="store-hero relative isolate overflow-hidden rounded-xl bg-muted"
     >
       <div className="relative aspect-[16/7] w-full min-h-64">
         <Image
@@ -38,10 +39,10 @@ export function HeroCarousel({ banners }: { banners: ActiveBanner[] }) {
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          className="store-hero-image object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-        <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 p-6 sm:p-10">
+        <div key={current.id} className="store-hero-content absolute inset-0 flex flex-col items-start justify-end gap-3 p-6 sm:p-10">
           <h2 className="font-display max-w-xl text-3xl text-white sm:text-4xl">{current.title}</h2>
           {current.subtitle && <p className="max-w-lg text-white/90">{current.subtitle}</p>}
           {current.ctaLabel && current.ctaHref && (
@@ -58,7 +59,7 @@ export function HeroCarousel({ banners }: { banners: ActiveBanner[] }) {
             type="button"
             aria-label="Previous promotion"
             onClick={() => setIndex((i) => (i - 1 + banners.length) % banners.length)}
-            className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white hover:bg-black/60"
+            className="store-hero-control absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white hover:bg-black/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <ChevronLeftIcon className="size-5" aria-hidden="true" />
           </button>
@@ -66,7 +67,7 @@ export function HeroCarousel({ banners }: { banners: ActiveBanner[] }) {
             type="button"
             aria-label="Next promotion"
             onClick={() => setIndex((i) => (i + 1) % banners.length)}
-            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white hover:bg-black/60"
+            className="store-hero-control absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white hover:bg-black/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <ChevronRightIcon className="size-5" aria-hidden="true" />
           </button>
@@ -78,7 +79,7 @@ export function HeroCarousel({ banners }: { banners: ActiveBanner[] }) {
                 aria-label={`Go to promotion ${i + 1}`}
                 aria-current={i === index}
                 onClick={() => setIndex(i)}
-                className={`size-2 rounded-full transition-colors ${i === index ? "bg-white" : "bg-white/40"}`}
+                className={`store-hero-dot size-2 rounded-full ${i === index ? "bg-white" : "bg-white/40"}`}
               />
             ))}
           </div>

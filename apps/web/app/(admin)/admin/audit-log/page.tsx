@@ -1,9 +1,10 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 
 import { db } from "@medivi/db/client";
 import { listAuditEntityTypes, listAuditLogAdmin } from "@medivi/db/queries";
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { requireAdmin } from "@/lib/auth-guards";
 import { CatalogPagination } from "@/components/catalog-pagination";
 import { EmptyState } from "@/components/empty-state";
@@ -27,26 +28,24 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-3xl">Audit log</h1>
+      <h1 className="font-display text-3xl"><LocalizedText text={"Audit log"} /></h1>
 
       <form method="GET" className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
           <label htmlFor="actorId" className="text-xs text-muted-foreground">
-            Actor id
-          </label>
+            <LocalizedText text={"Actor id "} /></label>
           <Input id="actorId" name="actorId" defaultValue={params.actorId} placeholder="user id…" className="w-56" />
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="entityType" className="text-xs text-muted-foreground">
-            Entity type
-          </label>
+            <LocalizedText text={"Entity type "} /></label>
           <select
             id="entityType"
             name="entityType"
             defaultValue={params.entityType ?? ""}
             className="h-9 rounded-md border border-input bg-transparent px-2.5 text-sm shadow-xs outline-none dark:bg-input/30"
           >
-            <option value="">All</option>
+            <option value=""><LocalizedText text={"All"} /></option>
             {entityTypes.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -55,8 +54,7 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
           </select>
         </div>
         <Button type="submit" size="sm">
-          Filter
-        </Button>
+          <LocalizedText text={"Filter "} /></Button>
       </form>
 
       {result.items.length === 0 ? (
@@ -66,11 +64,11 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
           <table className="w-full text-sm">
             <thead className="border-b bg-muted/50 text-left">
               <tr>
-                <th className="p-3">When</th>
-                <th className="p-3">Actor</th>
-                <th className="p-3">Action</th>
-                <th className="p-3">Entity</th>
-                <th className="p-3">Diff</th>
+                <th className="p-3"><LocalizedText text={"When"} /></th>
+                <th className="p-3"><LocalizedText text={"Actor"} /></th>
+                <th className="p-3"><LocalizedText text={"Action"} /></th>
+                <th className="p-3"><LocalizedText text={"Entity"} /></th>
+                <th className="p-3"><LocalizedText text={"Diff"} /></th>
               </tr>
             </thead>
             <tbody>

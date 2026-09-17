@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -7,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import { resetPassword } from "@/lib/auth-client";
 
@@ -29,8 +32,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
   if (!token) {
     return (
       <p role="alert" className="text-sm text-destructive">
-        This reset link is missing or invalid. Request a new one from the forgot-password page.
-      </p>
+        <LocalizedText text={"This reset link is missing or invalid. Request a new one from the forgot-password page. "} /></p>
     );
   }
 
@@ -47,7 +49,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="newPassword">New password</Label>
+        <Label htmlFor="newPassword"><LocalizedText text={"New password"} /></Label>
         <Input
           id="newPassword"
           type="password"

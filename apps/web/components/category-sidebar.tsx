@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import Link from "next/link";
 
 import { cn } from "@medivi/ui/lib/utils";
@@ -21,7 +22,7 @@ export function CategorySidebar({
               activeSlug === cat.slug && "text-primary underline",
             )}
           >
-            {cat.name}
+            <LocalizedText text={cat.name} />
           </Link>
           {cat.children.length > 0 && (
             <ul className="mt-1 flex flex-col gap-1 border-l pl-3">

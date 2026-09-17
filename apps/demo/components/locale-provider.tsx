@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Locale, MessageKey } from "@/lib/i18n";
-import { messages } from "@/lib/i18n";
+import { messages, translateDemo } from "@/lib/i18n";
 
 const LocaleContext = createContext<{ locale: Locale; setLocale: (locale: Locale) => void } | null>(null);
 
@@ -34,5 +34,6 @@ export function useI18n() {
   if (!context) throw new Error("useI18n must be used inside LocaleProvider");
   const { locale, setLocale } = context;
   const t = (key: MessageKey) => messages[locale][key];
-  return { locale, setLocale, t };
+  const formatMoney = (cents: number) => new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(cents / 100);
+  return { locale, setLocale, t, tr: (text: string) => translateDemo(locale, text), formatMoney };
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useTransition } from "react";
 
 import { Button } from "@medivi/ui/components/ui/button";
@@ -24,15 +27,13 @@ export function MockCheckoutActions({
         disabled={isPending}
         onClick={() => startTransition(() => declineMockPayment({ orderId, redirectPath: cancelPath }))}
       >
-        Decline
-      </Button>
+        <LocalizedText text={"Decline "} /></Button>
       <Button
         type="button"
         disabled={isPending}
         onClick={() => startTransition(() => approveMockPayment({ orderId, redirectPath: successPath }))}
       >
-        Approve payment
-      </Button>
+        <LocalizedText text={"Approve payment "} /></Button>
     </div>
   );
 }

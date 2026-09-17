@@ -1,12 +1,15 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import { requestPasswordReset } from "@/lib/auth-client";
 
@@ -35,15 +38,14 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <p className="text-sm text-muted-foreground">
-        If that email has an account, a reset link is on its way.
-      </p>
+        <LocalizedText text={"If that email has an account, a reset link is on its way. "} /></p>
     );
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email"><LocalizedText text={"Email"} /></Label>
         <Input
           id="email"
           type="email"

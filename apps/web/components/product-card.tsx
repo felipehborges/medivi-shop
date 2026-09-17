@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -16,40 +17,38 @@ export function ProductCard({
   showWishlistButton?: boolean;
 }) {
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-xl ring-1 ring-foreground/10 transition-shadow hover:shadow-md">
+    <article className="store-product-card group relative flex flex-col overflow-hidden rounded-lg bg-card transition-[transform,background-color] duration-200 motion-safe:hover:-translate-y-0.5">
       {showWishlistButton && (
         <div className="absolute top-2 right-2 z-10">
           <WishlistButton productId={product.id} initialWishlisted={!!isWishlisted} />
         </div>
       )}
       <Link href={`/product/${product.slug}`} className="contents">
-        <div className="relative aspect-square w-full overflow-hidden bg-muted">
+        <div className="relative aspect-[4/4.35] w-full overflow-hidden bg-muted">
           {product.imageUrl ? (
             <Image
               src={product.imageUrl}
               alt={product.imageAlt ?? product.name}
               fill
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-              className="object-cover transition-transform group-hover:scale-105"
+              className="store-product-image object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.035]"
             />
           ) : null}
           {!product.inStock && (
             <Badge variant="destructive" className="absolute top-2 left-2">
-              Out of stock
-            </Badge>
+              <LocalizedText text={"Out of stock "} /></Badge>
           )}
         </div>
-        <div className="flex flex-col gap-1 p-3">
+        <div className="flex flex-1 flex-col gap-1.5 border-t border-border/60 p-4">
           {product.isFeatured && (
             <Badge variant="secondary" className="w-fit">
-              Featured
-            </Badge>
+              <LocalizedText text={"Featured "} /></Badge>
           )}
-          <span className="font-medium">{product.name}</span>
+          <span className="font-display text-base leading-snug font-semibold"><LocalizedText text={product.name} /></span>
           {product.material && (
-            <span className="text-sm text-muted-foreground">{product.material}</span>
+            <span className="order-first text-[0.65rem] font-semibold tracking-[0.12em] text-muted-foreground uppercase"><LocalizedText text={product.material} /></span>
           )}
-          <span className="font-display text-lg">{formatPriceCents(product.basePriceCents)}</span>
+          <span className="mt-auto pt-3 font-display text-xl font-semibold tracking-wide text-foreground">{formatPriceCents(product.basePriceCents)}</span>
         </div>
       </Link>
     </article>

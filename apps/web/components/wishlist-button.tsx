@@ -6,6 +6,7 @@ import { HeartIcon } from "lucide-react";
 import { Button } from "@medivi/ui/components/ui/button";
 import { cn } from "@medivi/ui/lib/utils";
 import { toggleWishlist } from "@/lib/actions/wishlist";
+import { useLocale } from "./locale-provider";
 
 export function WishlistButton({
   productId,
@@ -14,6 +15,7 @@ export function WishlistButton({
   productId: string;
   initialWishlisted: boolean;
 }) {
+  const { tr } = useLocale();
   const [wishlisted, setWishlisted] = useState(initialWishlisted);
   const [isPending, startTransition] = useTransition();
 
@@ -40,7 +42,7 @@ export function WishlistButton({
       onClick={handleClick}
       disabled={isPending}
       aria-pressed={wishlisted}
-      aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+      aria-label={tr(wishlisted ? "Remove from wishlist" : "Add to wishlist")}
     >
       <HeartIcon className={cn("size-4", wishlisted && "fill-current text-destructive")} />
     </Button>

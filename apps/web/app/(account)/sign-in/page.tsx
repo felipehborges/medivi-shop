@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -19,22 +20,20 @@ export default function SignInPage() {
     <div className="flex flex-1 items-center justify-center px-4 py-16">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="font-display text-2xl">Sign in</CardTitle>
-          <CardDescription>Welcome back, adventurer.</CardDescription>
+          <CardTitle className="font-display text-2xl"><LocalizedText text={"Sign in"} /></CardTitle>
+          <CardDescription><LocalizedText text={"Welcome back, adventurer."} /></CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <SignInForm />
           <p className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
+            <LocalizedText text={"Don't have an account?"} />{" "}
             <Link href="/sign-up" className="font-medium text-foreground underline">
-              Create one
-            </Link>
+              <LocalizedText text={"Create one "} /></Link>
           </p>
           <p className="text-center text-sm text-muted-foreground">
-            Checked out as a guest?{" "}
+            <LocalizedText text={"Checked out as a guest?"} />{" "}
             <Link href="/orders/lookup" className="font-medium text-foreground underline">
-              Find your order
-            </Link>
+              <LocalizedText text={"Find your order "} /></Link>
           </p>
         </CardContent>
       </Card>

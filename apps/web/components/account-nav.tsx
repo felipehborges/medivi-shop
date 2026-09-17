@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@medivi/ui/lib/utils";
+import { useLocale } from "./locale-provider";
 
 const LINKS = [
   { href: "/account", label: "Overview" },
@@ -14,9 +15,10 @@ const LINKS = [
 
 export function AccountNav() {
   const pathname = usePathname();
+  const { tr } = useLocale();
 
   return (
-    <nav aria-label="Account navigation" className="flex flex-col gap-1">
+    <nav aria-label={tr("Account navigation")} className="flex flex-col gap-1">
       {LINKS.map((link) => {
         const isActive = link.href === "/account" ? pathname === "/account" : pathname.startsWith(link.href);
         return (
@@ -29,7 +31,7 @@ export function AccountNav() {
               isActive ? "bg-muted font-medium" : "text-muted-foreground",
             )}
           >
-            {link.label}
+            {tr(link.label)}
           </Link>
         );
       })}

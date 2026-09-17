@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -30,27 +31,25 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
       <div className="mb-6 flex flex-col items-center gap-2 text-center">
         {isPaid && (
           <>
-            <p className="font-display text-3xl">Thank you for your order!</p>
-            <p className="text-muted-foreground">A confirmation has been recorded for order {order.orderNumber}.</p>
+            <p className="font-display text-3xl"><LocalizedText text={"Thank you for your order!"} /></p>
+            <p className="text-muted-foreground"><LocalizedText text={"A confirmation has been recorded for order "} />{order.orderNumber}.</p>
           </>
         )}
         {isFailed && (
           <>
-            <p className="font-display text-3xl">Payment failed</p>
+            <p className="font-display text-3xl"><LocalizedText text={"Payment failed"} /></p>
             <p className="text-muted-foreground">
-              Order {order.orderNumber} was not charged. Your cart is unchanged — you can try again.
-            </p>
+              <LocalizedText text={"Order "} />{order.orderNumber} <LocalizedText text={"was not charged. Your cart is unchanged — you can try again. "} /></p>
             <Button asChild className="mt-2">
-              <Link href="/checkout">Try again</Link>
+              <Link href="/checkout"><LocalizedText text={"Try again"} /></Link>
             </Button>
           </>
         )}
         {isProcessing && (
           <>
-            <p className="font-display text-3xl">Payment processing</p>
+            <p className="font-display text-3xl"><LocalizedText text={"Payment processing"} /></p>
             <p className="text-muted-foreground">
-              We&apos;re confirming payment for order {order.orderNumber}. This page will update automatically.
-            </p>
+              <LocalizedText text={"We're confirming payment for order "} />{order.orderNumber}<LocalizedText text={". This page will update automatically. "} /></p>
           </>
         )}
       </div>

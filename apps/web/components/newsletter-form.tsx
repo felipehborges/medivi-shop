@@ -1,15 +1,18 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useState } from "react";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 
 export function NewsletterForm() {
   const [subscribed, setSubscribed] = useState(false);
 
   if (subscribed) {
-    return <p className="text-sm text-muted-foreground">Thanks — you&apos;re on the list.</p>;
+    return <p className="text-sm text-muted-foreground"><LocalizedText text={"Thanks — you're on the list."} /></p>;
   }
 
   return (
@@ -28,8 +31,7 @@ export function NewsletterForm() {
         className="max-w-56"
       />
       <Button type="submit" variant="secondary">
-        Subscribe
-      </Button>
+        <LocalizedText text={"Subscribe "} /></Button>
     </form>
   );
 }

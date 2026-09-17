@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 
 import { db } from "@medivi/db/client";
@@ -16,7 +17,7 @@ export default async function WishlistPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-6 font-display text-3xl">Your Wishlist</h1>
+      <h1 className="mb-6 font-display text-3xl"><LocalizedText text={"Your Wishlist"} /></h1>
 
       {products.length === 0 ? (
         <EmptyState

@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 
 import { cn } from "@medivi/ui/lib/utils";
 import type { ProductImageDetail } from "@medivi/db/queries";
+
+const LENS_SIZE = 176;
+const ZOOM_SCALE = 2.5;
 
 export function ProductGallery({
   images,
@@ -14,17 +17,9 @@ export function ProductGallery({
   productName: string;
 }) {
   const [index, setIndex] = useState(0);
-  const [zoomed, setZoomed] = useState(false);
+  const [isHoveringImage, setIsHoveringImage] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const active = images[index];
-
-  useEffect(() => {
-    if (!zoomed) return;
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setZoomed(false);
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [zoomed]);
 
   function showPrevious() {
     setIndex((i) => (i - 1 + images.length) % images.length);
@@ -39,6 +34,16 @@ export function ProductGallery({
     if (e.key === "ArrowRight") showNext();
   }
 
+  function updateZoomPosition(e: React.MouseEvent<HTMLDivElement>) {
+    const bounds = e.currentTarget.getBoundingClientRect();
+    setZoomPosition({
+      x: e.clientX - bounds.left,
+      y: e.clientY - bounds.top,
+      width: bounds.width,
+      height: bounds.height,
+    });
+  }
+
   if (!active) {
     return <div className="aspect-square w-full rounded-xl bg-muted" />;
   }
@@ -48,26 +53,43 @@ export function ProductGallery({
       <div
         role="group"
         aria-roledescription="image gallery"
-        aria-label={`${productName} images`}
+        aria-label={`${productName} images. Hover over the image to inspect details.`}
         tabIndex={0}
         onKeyDown={handleGalleryKeyDown}
-        className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        onMouseEnter={(e) => {
+          updateZoomPosition(e);
+          setIsHoveringImage(true);
+        }}
+        onMouseMove={updateZoomPosition}
+        onMouseLeave={() => {
+          setIsHoveringImage(false);
+          setZoomPosition({ x: 0, y: 0, width: 0, height: 0 });
+        }}
+        className="relative aspect-square w-full cursor-zoom-in overflow-hidden rounded-xl bg-muted outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <button
-          type="button"
-          onClick={() => setZoomed(true)}
-          aria-label={`Zoom in on ${active.altText}`}
-          className="relative block h-full w-full cursor-zoom-in"
-        >
-          <Image
-            src={active.url}
-            alt={active.altText}
-            fill
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="object-cover"
-            priority
+        <Image
+          src={active.url}
+          alt={active.altText}
+          fill
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          className="object-cover"
+          priority
+        />
+        {isHoveringImage && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute size-44 rounded-full border-2 border-background bg-muted shadow-xl"
+            style={{
+              left: zoomPosition.x,
+              top: zoomPosition.y,
+              transform: "translate(-50%, -50%)",
+              backgroundImage: `url(${JSON.stringify(active.url)})`,
+              backgroundPosition: `${-(zoomPosition.x * ZOOM_SCALE - LENS_SIZE / 2)}px ${-(zoomPosition.y * ZOOM_SCALE - LENS_SIZE / 2)}px`,
+              backgroundRepeat: "no-repeat",
+              backgroundSize: `${zoomPosition.width * ZOOM_SCALE}px ${zoomPosition.height * ZOOM_SCALE}px`,
+            }}
           />
-        </button>
+        )}
       </div>
 
       {images.length > 1 && (
@@ -88,24 +110,6 @@ export function ProductGallery({
               <Image src={image.url} alt="" fill sizes="64px" className="object-cover" />
             </button>
           ))}
-        </div>
-      )}
-
-      {zoomed && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${productName} zoomed image`}
-          onClick={() => setZoomed(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-8"
-        >
-          <Image
-            src={active.url}
-            alt={active.altText}
-            width={1200}
-            height={1200}
-            className="max-h-full max-w-full rounded-lg object-contain"
-          />
         </div>
       )}
     </div>

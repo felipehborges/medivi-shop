@@ -1,11 +1,14 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import type { AdminProductImage } from "@medivi/db/queries";
 import { deleteProductImageAction, uploadProductImageAction } from "@/lib/actions/admin-products";
@@ -98,7 +101,7 @@ export function ProductImageManager({
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border p-6">
-      <h2 className="font-display text-xl">Images</h2>
+      <h2 className="font-display text-xl"><LocalizedText text={"Images"} /></h2>
 
       {images.length > 0 && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -108,8 +111,7 @@ export function ProductImageManager({
                 <Image src={image.url} alt={image.altText} fill className="object-cover" unoptimized />
               </div>
               <Button type="button" size="sm" variant="outline" onClick={() => onDelete(image.id)}>
-                Remove
-              </Button>
+                <LocalizedText text={"Remove "} /></Button>
             </div>
           ))}
         </div>
@@ -117,11 +119,11 @@ export function ProductImageManager({
 
       <form ref={formRef} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="file">Image file</Label>
+          <Label htmlFor="file"><LocalizedText text={"Image file"} /></Label>
           <Input id="file" name="file" type="file" accept="image/png,image/jpeg,image/webp,image/avif" required />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="altText">Alt text</Label>
+          <Label htmlFor="altText"><LocalizedText text={"Alt text"} /></Label>
           <Input id="altText" name="altText" placeholder="Defaults to the product name" />
         </div>
         <Button type="submit" disabled={pending}>

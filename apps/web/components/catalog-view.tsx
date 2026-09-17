@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import { notFound } from "next/navigation";
 
 import { db } from "@medivi/db/client";
@@ -104,7 +105,7 @@ export async function CatalogView({
           <p className="text-sm text-muted-foreground">
             {query ? (
               <>
-                {result.total} {result.total === 1 ? "result" : "results"} for &ldquo;{query}&rdquo;
+                {result.total} <LocalizedText text={result.total === 1 ? "result" : "results"} /> <LocalizedText text={"for “"} />{query}&rdquo;
               </>
             ) : (
               <>

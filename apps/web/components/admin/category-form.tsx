@@ -1,11 +1,14 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import type { AdminCategory, CategoryOption } from "@medivi/db/queries";
 import { categorySchema, type CategoryFormInput } from "@/lib/schemas/category";
@@ -59,7 +62,7 @@ export function CategoryForm({
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-3 rounded-xl border p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="cat-name">Name</Label>
+          <Label htmlFor="cat-name"><LocalizedText text={"Name"} /></Label>
           <Input id="cat-name" aria-invalid={!!errors.name} {...register("name")} />
           {errors.name && (
             <p role="alert" className="text-sm text-destructive">
@@ -68,7 +71,7 @@ export function CategoryForm({
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="cat-slug">Slug</Label>
+          <Label htmlFor="cat-slug"><LocalizedText text={"Slug"} /></Label>
           <Input id="cat-slug" disabled={slugLocked} aria-invalid={!!errors.slug} {...register("slug")} />
           {slugLocked && !confirmingSlugChange && (
             <button
@@ -76,15 +79,12 @@ export function CategoryForm({
               className="self-start text-xs text-muted-foreground underline"
               onClick={() => setConfirmingSlugChange(true)}
             >
-              Change slug…
-            </button>
+              <LocalizedText text={"Change slug… "} /></button>
           )}
           {confirmingSlugChange && (
             <div className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs">
               <p>
-                Changing the slug can break existing links (bookmarks, shared URLs) — this won&apos;t redirect the
-                old one.
-              </p>
+                <LocalizedText text={"Changing the slug can break existing links (bookmarks, shared URLs) — this won't redirect the old one. "} /></p>
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -95,11 +95,9 @@ export function CategoryForm({
                     setConfirmingSlugChange(false);
                   }}
                 >
-                  Yes, unlock it
-                </Button>
+                  <LocalizedText text={"Yes, unlock it "} /></Button>
                 <Button type="button" size="sm" variant="ghost" onClick={() => setConfirmingSlugChange(false)}>
-                  Cancel
-                </Button>
+                  <LocalizedText text={"Cancel "} /></Button>
               </div>
             </div>
           )}
@@ -112,13 +110,13 @@ export function CategoryForm({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="cat-description">Description</Label>
+        <Label htmlFor="cat-description"><LocalizedText text={"Description"} /></Label>
         <Input id="cat-description" {...register("description")} />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="cat-imageUrl">Image URL</Label>
+          <Label htmlFor="cat-imageUrl"><LocalizedText text={"Image URL"} /></Label>
           <Input id="cat-imageUrl" {...register("imageUrl")} />
           {errors.imageUrl && (
             <p role="alert" className="text-sm text-destructive">
@@ -127,13 +125,13 @@ export function CategoryForm({
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="cat-parentId">Parent category</Label>
+          <Label htmlFor="cat-parentId"><LocalizedText text={"Parent category"} /></Label>
           <select
             id="cat-parentId"
             className="h-9 w-full rounded-md border border-input bg-transparent px-2.5 text-sm shadow-xs outline-none dark:bg-input/30"
             {...register("parentId")}
           >
-            <option value="">None (top-level)</option>
+            <option value=""><LocalizedText text={"None (top-level)"} /></option>
             {eligibleParents.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -145,11 +143,10 @@ export function CategoryForm({
 
       <div className="flex gap-2">
         <Button type="submit" disabled={isSubmitting}>
-          {category ? "Save changes" : "Add category"}
+          <LocalizedText text={category ? "Save changes" : "Add category"} />
         </Button>
         <Button type="button" variant="outline" onClick={onDone}>
-          Cancel
-        </Button>
+          <LocalizedText text={"Cancel "} /></Button>
       </div>
     </form>
   );

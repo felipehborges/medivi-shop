@@ -8,6 +8,7 @@ import { AnalyticsBeacon } from "@/components/analytics-beacon";
 import { JsonLd } from "@/components/json-ld";
 import { env } from "@/lib/env";
 import { getLocale } from "@/lib/i18n";
+import { LocaleProvider } from "@/components/locale-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -58,9 +59,11 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SiteHeader />
-          <main className="flex flex-1 flex-col">{children}</main>
-          <SiteFooter />
+          <LocaleProvider locale={locale}>
+            <SiteHeader />
+            <main className="flex flex-1 flex-col">{children}</main>
+            <SiteFooter />
+          </LocaleProvider>
           <Toaster />
           <AnalyticsBeacon />
         </ThemeProvider>

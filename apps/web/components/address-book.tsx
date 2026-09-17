@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useState, useTransition } from "react";
 
 import { Badge } from "@medivi/ui/components/ui/badge";
@@ -32,7 +35,7 @@ export function AddressBook({ addresses }: { addresses: Address[] }) {
         ) : (
           <div key={a.id} className="flex items-start justify-between gap-4 rounded-xl border p-4">
             <div>
-              {a.isDefault && <Badge variant="outline" className="mb-1">Default</Badge>}
+              {a.isDefault && <Badge variant="outline" className="mb-1"><LocalizedText text={"Default"} /></Badge>}
               <p className="font-medium">{a.fullName}</p>
               <p className="text-sm text-muted-foreground">
                 {a.line1}
@@ -45,8 +48,7 @@ export function AddressBook({ addresses }: { addresses: Address[] }) {
             </div>
             <div className="flex shrink-0 gap-2">
               <Button type="button" variant="outline" size="sm" onClick={() => setEditingId(a.id)}>
-                Edit
-              </Button>
+                <LocalizedText text={"Edit "} /></Button>
               <Button
                 type="button"
                 variant="ghost"
@@ -54,8 +56,7 @@ export function AddressBook({ addresses }: { addresses: Address[] }) {
                 disabled={isPending}
                 onClick={() => handleDelete(a.id)}
               >
-                Delete
-              </Button>
+                <LocalizedText text={"Delete "} /></Button>
             </div>
           </div>
         ),
@@ -65,8 +66,7 @@ export function AddressBook({ addresses }: { addresses: Address[] }) {
         <AddressForm onDone={() => setEditingId(null)} />
       ) : (
         <Button type="button" variant="outline" onClick={() => setEditingId("new")}>
-          Add address
-        </Button>
+          <LocalizedText text={"Add address "} /></Button>
       )}
     </div>
   );

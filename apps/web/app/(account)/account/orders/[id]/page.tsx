@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -24,7 +25,7 @@ export default async function AccountOrderDetailPage({ params }: { params: Promi
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-3xl">Order {order.orderNumber}</h1>
+      <h1 className="font-display text-3xl"><LocalizedText text={"Order "} />{order.orderNumber}</h1>
       <OrderDetailCard order={order} />
     </div>
   );

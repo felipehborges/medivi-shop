@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@medivi/ui/components/ui/card";
@@ -18,8 +19,8 @@ export default async function ResetPasswordPage({
     <div className="flex flex-1 items-center justify-center px-4 py-16">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="font-display text-2xl">Reset password</CardTitle>
-          <CardDescription>Choose a new password for your account.</CardDescription>
+          <CardTitle className="font-display text-2xl"><LocalizedText text={"Reset password"} /></CardTitle>
+          <CardDescription><LocalizedText text={"Choose a new password for your account."} /></CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <ResetPasswordForm token={token ?? null} />

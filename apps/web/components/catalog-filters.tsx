@@ -1,7 +1,8 @@
+import { LocalizedText } from "@/components/localized-text";
 import Link from "next/link";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import type { CatalogSearchParams } from "./catalog-view";
 
@@ -20,17 +21,16 @@ export function CatalogFilters({
   materials: string[];
 }) {
   return (
-    <form method="GET" action={basePath} className="flex flex-col gap-4 rounded-xl border p-4">
+    <form method="GET" action={basePath} className="flex flex-col gap-5 border-l-2 border-primary/45 bg-secondary/20 p-4">
       {searchParams.sort && <input type="hidden" name="sort" value={searchParams.sort} />}
       {searchParams.q && <input type="hidden" name="q" value={searchParams.q} />}
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium">Price range</legend>
+        <legend className="text-sm font-medium"><LocalizedText text={"Price range"} /></legend>
         <div className="flex items-center gap-2">
           <div className="flex flex-col gap-1">
             <Label htmlFor="minPrice" className="text-xs text-muted-foreground">
-              Min
-            </Label>
+              <LocalizedText text={"Min "} /></Label>
             <Input
               id="minPrice"
               name="minPrice"
@@ -44,8 +44,7 @@ export function CatalogFilters({
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="maxPrice" className="text-xs text-muted-foreground">
-              Max
-            </Label>
+              <LocalizedText text={"Max "} /></Label>
             <Input
               id="maxPrice"
               name="maxPrice"
@@ -61,16 +60,15 @@ export function CatalogFilters({
       </fieldset>
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="material">Material</Label>
+        <Label htmlFor="material"><LocalizedText text={"Material"} /></Label>
         <select
           id="material"
           name="material"
           defaultValue={searchParams.material ?? ""}
-          className="h-9 w-full rounded-md border border-input bg-background px-2.5 text-sm text-foreground shadow-xs outline-none [color-scheme:light] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:[color-scheme:dark]"
+          className="h-9 w-full rounded-sm border border-input bg-background px-2.5 text-sm text-foreground outline-none transition-[border-color,box-shadow] focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 [color-scheme:light] dark:[color-scheme:dark]"
         >
           <option className="bg-background text-foreground" value="">
-            All materials
-          </option>
+            <LocalizedText text={"All materials "} /></option>
           {materials.map((material) => (
             <option className="bg-background text-foreground" key={material} value={material}>
               {material}
@@ -87,15 +85,13 @@ export function CatalogFilters({
           defaultChecked={searchParams.inStock === "true"}
           className="size-4 rounded border border-input"
         />
-        In stock only
-      </label>
+        <LocalizedText text={"In stock only "} /></label>
 
       <div className="flex gap-2">
         <Button type="submit" size="sm">
-          Apply filters
-        </Button>
+          <LocalizedText text={"Apply filters "} /></Button>
         <Button variant="ghost" size="sm" asChild>
-          <Link href={basePath}>Clear</Link>
+          <Link href={basePath}><LocalizedText text={"Clear"} /></Link>
         </Button>
       </div>
     </form>

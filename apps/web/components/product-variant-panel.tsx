@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useState, useTransition } from "react";
 import { MinusIcon, PlusIcon } from "lucide-react";
 
@@ -9,6 +12,7 @@ import type { ProductVariantDetail } from "@medivi/db/queries";
 import { formatPriceCents } from "@/lib/format";
 import { addToCartAction } from "@/lib/actions/cart";
 import { StockBadge } from "./stock-badge";
+import { useLocale } from "./locale-provider";
 
 function variantLabel(variant: ProductVariantDetail): string {
   return variant.attributes?.size ?? variant.name;
@@ -21,6 +25,7 @@ export function ProductVariantPanel({
   variants: ProductVariantDetail[];
   currency: string;
 }) {
+  const { locale, tr } = useLocale();
   const firstInStock = variants.find((v) => v.stock > 0);
   const [selectedId, setSelectedId] = useState((firstInStock ?? variants[0])?.id);
   const [quantity, setQuantity] = useState(1);
@@ -62,7 +67,7 @@ export function ProductVariantPanel({
       {variants.length > 1 && (
         <fieldset className="flex flex-col gap-2">
           <legend className="text-sm font-medium">
-            {variants[0]?.attributes?.size ? "Size" : "Variant"}
+            {tr(variants[0]?.attributes?.size ? "Size" : "Variant")}
           </legend>
           <div className="flex flex-wrap gap-2">
             {variants.map((variant) => (
@@ -80,7 +85,7 @@ export function ProductVariantPanel({
                   variant.stock === 0 && "cursor-not-allowed line-through opacity-40",
                 )}
               >
-                {variantLabel(variant)}
+                {tr(variantLabel(variant))}
               </button>
             ))}
           </div>
@@ -98,7 +103,7 @@ export function ProductVariantPanel({
               size="icon-sm"
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
               disabled={quantity <= 1}
-              aria-label="Decrease quantity"
+              aria-label={tr("Decrease quantity")}
             >
               <MinusIcon className="size-4" />
             </Button>
@@ -111,13 +116,13 @@ export function ProductVariantPanel({
               size="icon-sm"
               onClick={() => setQuantity((q) => Math.min(selectedStock, q + 1))}
               disabled={quantity >= selectedStock}
-              aria-label="Increase quantity"
+              aria-label={tr("Increase quantity")}
             >
               <PlusIcon className="size-4" />
             </Button>
           </div>
           <Button type="button" onClick={handleAddToCart} disabled={isPending} className="flex-1">
-            {isPending ? "Adding…" : "Add to Cart"}
+            <LocalizedText text={isPending ? "Adding…" : "Add to Cart"} />
           </Button>
         </div>
       )}
@@ -127,7 +132,9 @@ export function ProductVariantPanel({
           role="alert"
           className={cn("text-sm", feedback.type === "error" ? "text-destructive" : "text-muted-foreground")}
         >
-          {feedback.message}
+          {locale === "pt-BR" && feedback.message.startsWith("Only ")
+            ? feedback.message.replace(/^Only (\d+) left in stock\.$/, "Restam apenas $1 em estoque.")
+            : tr(feedback.message)}
         </p>
       )}
     </div>

@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@medivi/ui/components/ui/dropdown-menu";
 import { signOut } from "@/lib/auth-client";
+import { useLocale } from "./locale-provider";
 
 export function UserMenu({
   name,
@@ -23,6 +24,7 @@ export function UserMenu({
   isAdmin: boolean;
 }) {
   const router = useRouter();
+  const { tr } = useLocale();
 
   async function handleSignOut() {
     await signOut();
@@ -38,7 +40,7 @@ export function UserMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Account menu">
+        <Button variant="ghost" size="icon" aria-label={tr("Account menu")}>
           <UserIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -46,21 +48,21 @@ export function UserMenu({
         <DropdownMenuLabel>{name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/account">Account</Link>
+          <Link href="/account">{tr("Account")}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/account/orders">Order history</Link>
+          <Link href="/account/orders">{tr("Order history")}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/wishlist">Wishlist</Link>
+          <Link href="/wishlist">{tr("Wishlist")}</Link>
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem asChild>
-            <Link href="/admin">Admin dashboard</Link>
+            <Link href="/admin">{tr("Admin dashboard")}</Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={handleSignOut}>Sign out</DropdownMenuItem>
+        <DropdownMenuItem onSelect={handleSignOut}>{tr("Sign out")}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

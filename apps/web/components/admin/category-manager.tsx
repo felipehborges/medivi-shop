@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -54,7 +57,7 @@ export function CategoryManager({ categories }: { categories: AdminCategory[] })
                 {c.parentId ? `— ${c.name}` : c.name}
                 {c.productCount > 0 && (
                   <Badge variant="outline" className="ml-2">
-                    {c.productCount} product{c.productCount === 1 ? "" : "s"}
+                    {c.productCount} <LocalizedText text={"product"} />{c.productCount === 1 ? "" : "s"}
                   </Badge>
                 )}
               </p>
@@ -67,11 +70,9 @@ export function CategoryManager({ categories }: { categories: AdminCategory[] })
             </div>
             <div className="flex shrink-0 gap-2">
               <Button type="button" variant="outline" size="sm" onClick={() => setEditingId(c.id)}>
-                Edit
-              </Button>
+                <LocalizedText text={"Edit "} /></Button>
               <Button type="button" variant="ghost" size="sm" onClick={() => handleDelete(c.id)}>
-                Delete
-              </Button>
+                <LocalizedText text={"Delete "} /></Button>
             </div>
           </div>
         ),
@@ -87,8 +88,7 @@ export function CategoryManager({ categories }: { categories: AdminCategory[] })
         />
       ) : (
         <Button type="button" variant="outline" onClick={() => setEditingId("new")}>
-          Add category
-        </Button>
+          <LocalizedText text={"Add category "} /></Button>
       )}
     </div>
   );

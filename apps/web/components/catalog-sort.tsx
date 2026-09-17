@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import { Button } from "@medivi/ui/components/ui/button";
 import type { ProductSort } from "@medivi/db/queries";
 import type { CatalogSearchParams } from "./catalog-view";
@@ -27,18 +28,16 @@ export function CatalogSort({
       {searchParams.q && <input type="hidden" name="q" value={searchParams.q} />}
 
       <label htmlFor="sort" className="text-sm text-muted-foreground">
-        Sort by
-      </label>
+        <LocalizedText text={"Sort by "} /></label>
       <select
         id="sort"
         name="sort"
         defaultValue={searchParams.sort ?? (isSearching ? "" : "featured")}
-        className="h-9 rounded-md border border-input bg-background px-2.5 text-sm text-foreground shadow-xs outline-none [color-scheme:light] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:[color-scheme:dark]"
+        className="h-9 rounded-sm border border-input bg-background px-2.5 text-sm text-foreground outline-none transition-[border-color,box-shadow] [color-scheme:light] focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 dark:[color-scheme:dark]"
       >
         {isSearching && (
           <option className="bg-background text-foreground" value="">
-            Relevance
-          </option>
+            <LocalizedText text={"Relevance "} /></option>
         )}
         {SORT_OPTIONS.map((option) => (
           <option className="bg-background text-foreground" key={option.value} value={option.value}>
@@ -47,8 +46,7 @@ export function CatalogSort({
         ))}
       </select>
       <Button type="submit" size="sm" variant="outline">
-        Sort
-      </Button>
+        <LocalizedText text={"Sort "} /></Button>
     </form>
   );
 }

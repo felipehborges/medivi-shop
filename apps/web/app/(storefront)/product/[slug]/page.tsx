@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/localized-text";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -82,14 +83,13 @@ export default async function ProductPage({
       />
       <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap gap-1 text-sm text-muted-foreground">
         <Link href="/catalog" className="hover:text-foreground">
-          Catalog
-        </Link>
+          <LocalizedText text={"Catalog "} /></Link>
         <span aria-hidden="true">/</span>
         <Link href={`/catalog/${product.categorySlug}`} className="hover:text-foreground">
-          {product.categoryName}
+          <LocalizedText text={product.categoryName} />
         </Link>
         <span aria-hidden="true">/</span>
-        <span aria-current="page">{product.name}</span>
+        <span aria-current="page"><LocalizedText text={product.name} /></span>
       </nav>
 
       <div className="grid gap-8 md:grid-cols-2">
@@ -99,9 +99,9 @@ export default async function ProductPage({
           <div className="flex items-start justify-between gap-4">
             <div>
               {product.material && (
-                <p className="text-sm text-muted-foreground">{product.material}</p>
+                <p className="text-sm text-muted-foreground"><LocalizedText text={product.material} /></p>
               )}
-              <h1 className="font-display text-3xl">{product.name}</h1>
+              <h1 className="font-display text-3xl"><LocalizedText text={product.name} /></h1>
             </div>
             {wishlistedIds && (
               <WishlistButton productId={product.id} initialWishlisted={wishlistedIds.has(product.id)} />
@@ -110,8 +110,8 @@ export default async function ProductPage({
 
           <ProductVariantPanel variants={product.variants} currency={product.currency} />
 
-          {product.description && <p className="text-muted-foreground">{product.description}</p>}
-          {product.longDescription && <p>{product.longDescription}</p>}
+          {product.description && <p className="text-muted-foreground"><LocalizedText text={product.description} /></p>}
+          {product.longDescription && <p><LocalizedText text={product.longDescription} /></p>}
         </div>
       </div>
 

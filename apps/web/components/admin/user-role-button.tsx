@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -26,7 +29,7 @@ export function UserRoleButton({ userId, role, isSelf }: { userId: string; role:
   }
 
   if (isSelf) {
-    return <span className="text-xs text-muted-foreground">(you)</span>;
+    return <span className="text-xs text-muted-foreground"><LocalizedText text={"(you)"} /></span>;
   }
 
   return (

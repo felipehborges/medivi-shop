@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -7,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import { signUp } from "@/lib/auth-client";
 
@@ -45,10 +48,9 @@ export function SignUpForm() {
     return (
       <div className="flex flex-col gap-3 text-sm">
         <p>
-          Account created for <strong>{submittedEmail}</strong>. Check your email for a verification link, then{" "}
+          <LocalizedText text={"Account created for "} /><strong>{submittedEmail}</strong><LocalizedText text={". Check your email for a verification link, then"} />{" "}
           <Link href="/sign-in" className="font-medium text-foreground underline">
-            sign in
-          </Link>
+            <LocalizedText text={"sign in "} /></Link>
           .
         </p>
       </div>
@@ -62,7 +64,7 @@ export function SignUpForm() {
       className="flex flex-col gap-4"
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="name">Name</Label>
+        <Label htmlFor="name"><LocalizedText text={"Name"} /></Label>
         <Input
           id="name"
           autoComplete="name"
@@ -78,7 +80,7 @@ export function SignUpForm() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email"><LocalizedText text={"Email"} /></Label>
         <Input
           id="email"
           type="email"
@@ -95,7 +97,7 @@ export function SignUpForm() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password"><LocalizedText text={"Password"} /></Label>
         <Input
           id="password"
           type="password"

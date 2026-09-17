@@ -1,5 +1,8 @@
 "use client";
 
+import { LocalizedText } from "@/components/localized-text";
+
+
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Button } from "@medivi/ui/components/ui/button";
-import { Input } from "@medivi/ui/components/ui/input";
+import { Input } from "@/components/translated-input";
 import { Label } from "@medivi/ui/components/ui/label";
 import { signIn, sendVerificationEmail } from "@/lib/auth-client";
 import { mergeCartOnLogin } from "@/lib/actions/cart";
@@ -67,7 +70,7 @@ export function SignInForm() {
       className="flex flex-col gap-4"
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email"><LocalizedText text={"Email"} /></Label>
         <Input
           id="email"
           type="email"
@@ -85,10 +88,9 @@ export function SignInForm() {
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password"><LocalizedText text={"Password"} /></Label>
           <Link href="/forgot-password" className="text-xs text-muted-foreground underline">
-            Forgot password?
-          </Link>
+            <LocalizedText text={"Forgot password? "} /></Link>
         </div>
         <Input
           id="password"
@@ -117,7 +119,7 @@ export function SignInForm() {
 
       {unverifiedEmail && (
         <div role="alert" className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
-          <p>Verify your email before signing in — check your inbox for the link.</p>
+          <p><LocalizedText text={"Verify your email before signing in — check your inbox for the link."} /></p>
           <Button type="button" size="sm" variant="outline" disabled={resendState !== "idle"} onClick={onResend}>
             {resendState === "sent" ? "Verification email sent" : resendState === "sending" ? "Sending…" : "Resend verification email"}
           </Button>
