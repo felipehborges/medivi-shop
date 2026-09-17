@@ -7,7 +7,6 @@ import { useState } from "react";
 import { ThemeToggle } from "@medivi/ui/components/theme-toggle";
 import { Button } from "@medivi/ui/components/ui/button";
 import { useDemo } from "./demo-provider";
-import brandMark from "@/app/icon.png";
 import { LanguageSwitcher } from "./language-switcher";
 import { useI18n } from "./locale-provider";
 
@@ -20,7 +19,7 @@ export function SiteHeader() {
     <div className="bg-primary px-4 py-2 text-center text-xs font-semibold tracking-wide text-primary-foreground">{t("demoBanner")}</div>
     <header className="sticky top-0 z-40 border-b bg-background/92 backdrop-blur-xl">
       <div className="mx-auto flex h-18 max-w-7xl items-center gap-5 px-4 sm:px-6">
-        <Link href="/" className="mr-auto flex items-center gap-2 font-display text-xl font-bold tracking-widest" aria-label={tr("Medivi home")}><Image src={brandMark} alt="" width={38} height={38} priority /><span>MEDIVI</span></Link>
+        <Link href="/" className="mr-auto flex items-center gap-2 font-display text-xl font-bold tracking-widest" aria-label={tr("Medivi home")}><Image src="/icon.png" alt="" width={38} height={38} priority /><span>MEDIVI</span></Link>
         <nav className="hidden items-center gap-7 md:flex">{links.map((link) => <Link className="text-sm font-medium text-muted-foreground transition hover:text-foreground" href={link.href} key={link.href}>{link.label}</Link>)}</nav>
         <LanguageSwitcher /><ThemeToggle />
         <Button variant="ghost" size="icon" asChild aria-label={t("wishlist")}><Link href="/wishlist" className="relative"><Heart /><span className="absolute -right-1 -top-1 text-[10px] font-bold">{state.wishlist.length || ""}</span></Link></Button>
