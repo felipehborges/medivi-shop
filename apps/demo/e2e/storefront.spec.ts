@@ -7,24 +7,24 @@ test("browse-to-confirmation stays in the browser", async ({ page }) => {
   });
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Gear for those who answer the call." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Medivi" })).toBeVisible();
   await page.getByRole("link", { name: /Enter the armory/i }).click();
-  await page.getByRole("link", { name: /Dragonbone Greatsword Featured/i }).click();
-  await page.getByRole("button", { name: "Add to cart" }).click();
+  await page.getByRole("link", { name: /Dragonbone Greatsword/i }).first().click();
+  await page.getByRole("button", { name: /Add to the satchel/i }).click();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("medivi-demo-state-v1"))).not.toBeNull();
 
   await page.reload();
-  await page.getByRole("link", { name: "Cart" }).click();
+  await page.getByRole("link", { name: "Bill of lading" }).click();
   await expect(page.getByText("$320.00").first()).toBeVisible();
-  await page.getByRole("link", { name: "Continue to checkout" }).click();
-  await expect(page.getByText("Everything stays in this browser.")).toBeVisible();
-  await page.getByRole("button", { name: /Continue to simulation/i }).click();
-
-  await page.getByRole("button", { name: "Simulate decline" }).click();
-  await expect(page.getByText(/cart was preserved/i)).toBeVisible();
-  await page.getByRole("button", { name: "Simulate approval" }).click();
-  await expect(page.getByRole("heading", { name: "Your quest is confirmed" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Cart" })).toHaveText("");
+  await page.getByRole("link", { name: /To the ledger/i }).click();
+  await page.getByPlaceholder("Aldric of Hollowfen").fill("Aldric of Hollowfen");
+  await page.getByPlaceholder("Third house past the tanner").fill("Third house past the tanner");
+  await page.getByPlaceholder("Vael").fill("Vael");
+  await page.getByPlaceholder("Aster").fill("Aster");
+  await page.getByRole("button", { name: /To the seal/i }).click();
+  await page.getByRole("button", { name: /Press the seal/i }).click();
+  await expect(page.getByRole("heading", { name: "Sealed" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Bill of lading" })).toContainText("—");
   expect(applicationRequests).toEqual([]);
 });
 
@@ -34,7 +34,7 @@ test("Portuguese selection translates interactive feedback", async ({ page }) =>
   await page.goto("/product/dragonbone-greatsword");
 
   await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
-  await page.getByRole("button", { name: "Adicionar ao carrinho" }).click();
+  await page.getByRole("button", { name: /Colocar na bolsa/i }).click();
   await expect(page.getByText("Adicionado ao carrinho da demo")).toBeVisible();
 
   await page.goto("/admin");
@@ -45,7 +45,7 @@ test("Portuguese selection translates interactive feedback", async ({ page }) =>
 test("product zoom activates when navigation leaves the cursor over the image", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/catalog");
-  await page.getByRole("link", { name: /Dragonbone Greatsword Featured/i }).click({ position: { x: 100, y: 100 } });
+  await page.getByRole("link", { name: /Dragonbone Greatsword/i }).first().click({ position: { x: 100, y: 100 } });
 
   await expect(page.getByRole("heading", { name: "Dragonbone Greatsword" })).toBeVisible();
   await expect(page.getByTestId("product-zoom-lens")).toBeVisible();

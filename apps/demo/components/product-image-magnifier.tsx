@@ -51,14 +51,14 @@ export function ProductImageMagnifier({ src, alt }: { src: string; alt: string }
       }}
       onMouseMove={updatePosition}
       onMouseLeave={() => setIsHovering(false)}
-      className="relative aspect-square cursor-zoom-in overflow-hidden rounded-3xl border bg-muted"
+      className="arm-frame relative h-[400px] cursor-zoom-in overflow-hidden border border-[#0a0908] sm:h-[520px]"
     >
-      <Image src={src} alt={alt} fill priority className="object-cover" />
+      <Image src={src} alt={alt} fill priority sizes="(max-width: 900px) 100vw, 50vw" className="object-cover" />
       {isHovering && (
         <div
           aria-hidden="true"
           data-testid="product-zoom-lens"
-          className="pointer-events-none absolute size-44 rounded-full border-2 border-background bg-muted shadow-xl"
+          className="pointer-events-none absolute z-10 size-44 rounded-full border-2 border-[#b08a4a] bg-muted shadow-xl"
           style={{
             left: position.x,
             top: position.y,

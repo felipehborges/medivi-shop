@@ -25,7 +25,7 @@ export const categories: Category[] = [
 ];
 
 export const products: Product[] = [
-  { slug: "dragonbone-greatsword", name: "Dragonbone Greatsword", description: "Carved from a fallen wyrm's rib, lighter than its size suggests and slow to dull.", material: "Dragonbone", priceCents: 32000, category: "swords", image: "/products/dragonbone-greatsword.webp", featured: true, variants: single("dragonbone-greatsword", 4) },
+  { slug: "dragonbone-greatsword", name: "Dragonbone Greatsword", description: "Carved from a fallen wyrm's rib, lighter than its size suggests and slow to dull.", material: "Dragonbone", priceCents: 32000, category: "swords", image: "/products/dragonbone-greatsword-natural.webp", featured: true, variants: single("dragonbone-greatsword", 4) },
   { slug: "iron-longsword", name: "Iron Longsword", description: "A dependable double-edged blade, favored by militia and mercenaries alike.", material: "Iron", priceCents: 4500, category: "swords", image: "/products/iron-longsword.webp", variants: single("iron-longsword", 40) },
   { slug: "silver-rapier", name: "Silver Rapier", description: "A duelist's blade — fast, precise, and unusually effective against the unnatural.", material: "Silver", priceCents: 11000, category: "swords", image: "/products/silver-rapier.webp", variants: single("silver-rapier", 15) },
   { slug: "dragonscale-shield", name: "Dragonscale Shield", description: "Overlapping scale plates that shrug off flame better than steel ever could.", material: "Dragonscale", priceCents: 41000, category: "shields", image: "/products/dragonscale-shield.webp", featured: true, variants: single("dragonscale-shield", 5) },

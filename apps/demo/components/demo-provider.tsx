@@ -14,7 +14,7 @@ type DemoContextValue = {
   addToCart: (variantId: string, quantity?: number) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
   toggleWishlist: (slug: string) => void;
-  finishOrder: (email: string) => DemoOrder;
+  finishOrder: (email: string, carriageCents?: number) => DemoOrder;
   toggleProduct: (slug: string) => void;
   reset: () => void;
 };
@@ -61,9 +61,9 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   }, [commit, message]);
   const updateQuantity = useCallback((variantId: string, quantity: number) => commit((current) => updateItem(current, variantId, quantity)), [commit]);
   const toggleWishlist = useCallback((slug: string) => commit((current) => ({ ...current, wishlist: current.wishlist.includes(slug) ? current.wishlist.filter((item) => item !== slug) : [...current.wishlist, slug] })), [commit]);
-  const finishOrder = useCallback((email: string) => {
+  const finishOrder = useCallback((email: string, carriageCents = 0) => {
     const current = stateRef.current;
-    const created: DemoOrder = { id: `MDV-${Date.now().toString().slice(-8)}`, createdAt: new Date().toISOString(), email, items: current.cart, totalCents: cartTotal(current), status: "paid" };
+    const created: DemoOrder = { id: `MDV-${Date.now().toString().slice(-8)}`, createdAt: new Date().toISOString(), email, items: current.cart, totalCents: cartTotal(current) + carriageCents, status: "paid" };
     commit((latest) => ({ ...latest, cart: [], orders: [created, ...latest.orders] }));
     return created;
   }, [commit]);

@@ -21,10 +21,10 @@ export function ProductImageGallery({ src, alt }: { src: string; alt: string }) 
             aria-pressed={selected === index}
             aria-label={`${tr("Show image")} ${index + 1} ${tr("of")} ${photos.length}`}
             onClick={() => setSelected(index)}
-            className={`relative size-20 shrink-0 overflow-hidden rounded-xl border-2 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected === index ? "border-primary" : "border-border hover:border-primary/60"}`}
+            className={`arm-frame relative size-16 shrink-0 overflow-hidden border-2 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected === index ? "border-[#b08a4a]" : "border-[#4a3b22] hover:border-[#b08a4a]"}`}
           >
             <Image src={photo} alt="" fill sizes="80px" className="object-cover" />
-            <span className="absolute bottom-1 right-1 rounded bg-background/85 px-1.5 text-xs font-semibold">{index + 1}</span>
+            <span className="absolute bottom-1 right-1 bg-[#14110ecc] px-1.5 text-xs font-semibold">{index + 1}</span>
           </button>
         ))}
       </div>

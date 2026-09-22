@@ -1,19 +1,19 @@
 "use client";
-
-import { useI18n } from "./locale-provider";
-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CheckCircle2, CreditCard, XCircle } from "lucide-react";
-import { Button } from "@medivi/ui/components/ui/button";
 import { useDemo } from "./demo-provider";
-import { DemoNotice } from "./site-header";
-
+import { useArmory, Mark, PageHead } from "./armory-primitives";
+const methods = [{id:"coin",name:"payCoin",note:"payCoinNote",mark:"coins"},{id:"credit",name:"payCredit",note:"payCreditNote",mark:"scroll"},{id:"account",name:"payAccount",note:"payAccountNote",mark:"seal"}] as const;
 export function PaymentView() {
-  const { tr, formatMoney } = useI18n();
-  const { state, totalCents, finishOrder } = useDemo(); const router = useRouter(); const [declined, setDeclined] = useState(false);
-  function approve() { const raw = sessionStorage.getItem("medivi-demo-checkout"); const email = raw ? (JSON.parse(raw) as { email?: string }).email ?? "adventurer@example.com" : "adventurer@example.com"; const order = finishOrder(email); sessionStorage.removeItem("medivi-demo-checkout"); router.push(`/order/confirmation?id=${encodeURIComponent(order.id)}`); }
-  if (!state.cart.length) return <div className="mx-auto max-w-xl px-6 py-24 text-center"><h1 className="text-3xl font-bold">{tr("No pending demo checkout")}</h1><Button className="mt-6" asChild><Link href="/catalog">{tr("Browse catalog")}</Link></Button></div>;
-  return <div className="mx-auto max-w-2xl px-6 py-12"><h1 className="text-center text-4xl font-bold">{tr("Simulated payment")}</h1><p className="mt-3 text-center text-muted-foreground">{tr("Choose an outcome to preview the storefront response.")}</p><div className="mt-7"><DemoNotice /></div><div className="mt-7 rounded-3xl border bg-card p-7 shadow-xl"><div className="flex items-center justify-between border-b pb-5"><div className="flex items-center gap-3"><div className="rounded-full bg-muted p-3"><CreditCard/></div><div><p className="text-sm text-muted-foreground">{tr("Demo total")}</p><strong className="text-2xl">{formatMoney(totalCents)}</strong></div></div><span className="rounded-full bg-green-500/10 px-3 py-1 text-xs font-bold text-green-600">{tr("NO CHARGE")}</span></div>{declined && <div className="mt-5 flex gap-3 rounded-xl bg-destructive/10 p-4 text-destructive"><XCircle className="shrink-0"/><p><strong>{tr("Payment simulation declined.")}</strong><br/><span className="text-sm">{tr("Your cart was preserved. Choose approval to continue.")}</span></p></div>}<div className="mt-6 grid gap-3 sm:grid-cols-2"><Button size="lg" variant="outline" onClick={() => setDeclined(true)}><XCircle/> {tr("Simulate decline")}</Button><Button size="lg" onClick={approve}><CheckCircle2/> {tr("Simulate approval")}</Button></div><p className="mt-5 text-center text-xs text-muted-foreground">{tr("This interface intentionally collects no card number, security code, or billing credential.")}</p></div></div>;
+  const { a, formatMoney } = useArmory();
+  const { state, totalCents, finishOrder } = useDemo();
+  const router = useRouter();
+  const [selected,setSelected] = useState("coin");
+  const [checkout] = useState<{email?:string;carriageCents?:number}>(()=>{if(typeof window==="undefined")return {};try{return JSON.parse(sessionStorage.getItem("medivi-demo-checkout")??"{}")}catch{return {}}});
+  const due = totalCents + (checkout.carriageCents??0);
+  function approve() { const order=finishOrder(checkout.email??"bearer@medivi.invalid",checkout.carriageCents??0); sessionStorage.removeItem("medivi-demo-checkout"); router.push(`/order/confirmation?id=${encodeURIComponent(order.id)}`); }
+  return <div className="arm-wrap max-w-[1008px] py-14"><Link href="/checkout" className="arm-link">← {a("backToLedger")}</Link><div className="mt-6"><PageHead title={a("paymentTitle")} sub={a("paymentSub")}/></div>
+    {!state.cart.length ? <div className="arm-plate p-12 text-center"><p>{a("emptyCart")}</p><Link href="/catalog" className="arm-button mt-5">{a("seeTheWares")}</Link></div> : <><div className="grid gap-3.5">{methods.map(method=><button key={method.id} type="button" className="arm-choice !p-5" data-selected={selected===method.id} onClick={()=>setSelected(method.id)}><Mark name={method.mark} size={28}/><span className="flex-1"><span className="arm-ui block text-[21px] text-[#efe6cc]">{a(method.name)}</span><span className="text-[14px] leading-6 text-[#9a8b6a]">{a(method.note)}</span></span><span className={`h-3 w-3 rotate-45 border border-black/60 ${selected===method.id?"bg-[#a0393e]":"bg-[#2a241d]"}`}/></button>)}</div><div className="mt-9 flex flex-wrap items-end justify-between gap-6 border-t border-[#e9dfc41f] pt-7"><div><p className="arm-eyebrow">{a("dueAtCounter")}</p><p className="arm-ui text-[42px]">{formatMoney(due)}</p><p className="text-[14px] italic text-[#9a8b6a]">{a("sealNote")}</p></div><button className="arm-ui flex min-h-[60px] items-center gap-3 border border-[#2a0c0e] bg-[radial-gradient(circle_at_30%_20%,#8a2f33,#4a1517)] px-8 text-[17px] uppercase tracking-[.1em] text-[#f6e9d2] shadow-[inset_0_1px_0_rgba(255,200,180,.22),0_14px_30px_rgba(0,0,0,.6)] hover:bg-[radial-gradient(circle_at_30%_20%,#a0393e,#5c1b1e)]" onClick={approve}><Mark name="seal" size={22}/>{a("pressTheSeal")}</button></div></>}
+  </div>;
 }
