@@ -1,4 +1,5 @@
-# Multistage build for apps/web (the only deployable in this monorepo) — for
+# Legacy commercial deployment for apps/web. The active frontend is apps/demo.
+# Multistage build for apps/web — for
 # the self-host Docker Compose target. Vercel deploys directly from source
 # and does not use this file (see docs/architecture.md §10).
 

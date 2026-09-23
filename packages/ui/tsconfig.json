@@ -2,6 +2,7 @@
   "extends": "@medivi/config/tsconfig/base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "noEmit": true,

@@ -2,12 +2,14 @@
 
 The portfolio deployment is the static, backend-free application in
 `apps/demo`. The commercial full-stack implementation remains in `apps/web`
-and the backend workspace packages remain unchanged.
+and the backend workspace packages remain available for future use. Default
+root commands and CI run the frontend only.
 
 ## Local development
 
 ```bash
-pnpm --filter @medivi/demo dev
+pnpm install --filter @medivi/demo... --frozen-lockfile
+pnpm dev
 ```
 
 No `.env`, database, Docker container, or provider account is required.
@@ -18,11 +20,11 @@ screen.
 ## Verification
 
 ```bash
-pnpm --filter @medivi/demo lint
-pnpm --filter @medivi/demo typecheck
-pnpm --filter @medivi/demo test
-pnpm --filter @medivi/demo test:e2e
-pnpm --filter @medivi/demo build
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:e2e
+pnpm build
 ```
 
 The production build uses Next.js static export and writes `apps/demo/out`.
@@ -35,7 +37,7 @@ Import this GitHub repository as a new or existing Vercel project and set:
 
 - Root Directory: `apps/demo`
 - Framework Preset: Next.js
-- Install Command: automatic (`pnpm install` from the workspace lockfile)
+- Install Command: `pnpm install --filter @medivi/demo... --frozen-lockfile`
 - Build Command: automatic (`pnpm build` in the selected workspace)
 - Environment Variables: none
 
@@ -55,6 +57,5 @@ runs the demo's Playwright purchase journey on pushes and pull requests.
 ## Resuming the commercial version
 
 The commercial app still lives in `apps/web`; use `docs/runbook.md` for its
-Postgres, authentication, payment, email, storage, and deployment setup. The
-demo neither imports nor comments out that implementation, so it can continue
-evolving independently.
+Postgres, authentication, payment, email, storage, and deployment setup. It is
+disabled in the default commands and CI, while its source remains available.
