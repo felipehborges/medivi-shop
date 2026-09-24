@@ -1,20 +1,38 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Locale, MessageKey } from "@/lib/i18n";
-import { messages, translateDemo } from "@/lib/i18n";
+import { armoryCopy, messages, translateDemo } from "@/lib/i18n";
 
-const LocaleContext = createContext<{ locale: Locale; setLocale: (locale: Locale) => void } | null>(null);
+const LocaleContext = createContext<{
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
+} | null>(null);
 
-export function LocaleProvider({ locale: initialLocale, children }: { locale: Locale; children: ReactNode }) {
+export function LocaleProvider({
+  locale: initialLocale,
+  children,
+}: {
+  locale: Locale;
+  children: ReactNode;
+}) {
   const [locale, updateLocale] = useState(initialLocale);
 
   /* eslint-disable react-hooks/set-state-in-effect -- hydrate the static demo from browser preference */
   useEffect(() => {
     const saved = document.cookie.match(/(?:^|; )medivi-locale=([^;]+)/)?.[1];
-    const detected: Locale = saved === "pt-BR" || saved === "en"
-      ? saved
-      : navigator.language.toLowerCase().startsWith("pt") ? "pt-BR" : "en";
+    const detected: Locale =
+      saved === "pt-BR" || saved === "en"
+        ? saved
+        : navigator.language.toLowerCase().startsWith("pt")
+          ? "pt-BR"
+          : "en";
     updateLocale(detected);
     document.documentElement.lang = detected;
   }, []);
@@ -26,7 +44,11 @@ export function LocaleProvider({ locale: initialLocale, children }: { locale: Lo
     updateLocale(next);
   };
 
-  return <LocaleContext.Provider value={{ locale, setLocale }}>{children}</LocaleContext.Provider>;
+  return (
+    <LocaleContext.Provider value={{ locale, setLocale }}>
+      {children}
+    </LocaleContext.Provider>
+  );
 }
 
 export function useI18n() {
@@ -34,8 +56,21 @@ export function useI18n() {
   if (!context) throw new Error("useI18n must be used inside LocaleProvider");
   const { locale, setLocale } = context;
   const t = (key: MessageKey) => messages[locale][key];
-  const formatMoney = (cents: number) => new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(cents / 100);
-  return { locale, setLocale, t, tr: (text: string) => translateDemo(locale, text), formatMoney };
+  const formatMoney = (cents: number) =>
+    new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: "USD",
+    }).format(cents / 100);
+  const language: "pt" | "en" = locale === "pt-BR" ? "pt" : "en";
+  return {
+    locale,
+    language,
+    copy: armoryCopy[language],
+    setLocale,
+    t,
+    tr: (text: string) => translateDemo(locale, text),
+    formatMoney,
+  };
 }
 
 export function useDemoMessage() {

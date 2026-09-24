@@ -1,72 +1,93 @@
 "use client";
 
-import Image from "next/image";
+import { ProductFrame } from "./armory";
 import { useEffect, useRef, useState } from "react";
-import { useI18n } from "./locale-provider";
 import { getLastMousePosition } from "@/lib/pointer-position";
 
 const LENS_SIZE = 176;
 const ZOOM_SCALE = 2.5;
 
-export function ProductImageMagnifier({ src, alt }: { src: string; alt: string }) {
-  const { tr } = useI18n();
-  const imageRef = useRef<HTMLDivElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0, width: 0, height: 0 });
+type Lens = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+};
+function locateLens(
+  root: HTMLDivElement | null,
+  clientX: number,
+  clientY: number,
+): Lens | null {
+  const photo = root?.querySelector(".product-photo");
+  const image = photo?.querySelector("img");
+  if (!root || !photo || !image?.naturalWidth) return null;
+  const bounds = photo.getBoundingClientRect();
+  const outer = root.getBoundingClientRect();
+  const x = clientX - bounds.left;
+  const y = clientY - bounds.top;
+  if (x < 0 || y < 0 || x > bounds.width || y > bounds.height) return null;
+  // Match object-fit:cover, including its centered crop and the frame padding.
+  const scale = Math.max(
+    bounds.width / image.naturalWidth,
+    bounds.height / image.naturalHeight,
+  );
+  const width = image.naturalWidth * scale;
+  const height = image.naturalHeight * scale;
+  return {
+    left: clientX - outer.left,
+    top: clientY - outer.top,
+    width: width * ZOOM_SCALE,
+    height: height * ZOOM_SCALE,
+    x: -((x + (width - bounds.width) / 2) * ZOOM_SCALE - LENS_SIZE / 2),
+    y: -((y + (height - bounds.height) / 2) * ZOOM_SCALE - LENS_SIZE / 2),
+  };
+}
 
+export function ProductImageMagnifier({
+  src,
+  alt,
+}: {
+  src: string;
+  alt: string;
+}) {
+  const imageRef = useRef<HTMLDivElement>(null);
+  const [lens, setLens] = useState<Lens | null>(null);
   useEffect(() => {
-    // Navigation can put the existing cursor over this image without firing
-    // mouseenter. Check its last position once the new layout is painted.
     const frame = requestAnimationFrame(() => {
       const pointer = getLastMousePosition();
-      const bounds = imageRef.current?.getBoundingClientRect();
-      if (!pointer || !bounds) return;
-      const inside = pointer.x >= bounds.left && pointer.x <= bounds.right
-        && pointer.y >= bounds.top && pointer.y <= bounds.bottom;
-      if (inside) {
-        setPosition({ x: pointer.x - bounds.left, y: pointer.y - bounds.top, width: bounds.width, height: bounds.height });
-        setIsHovering(true);
-      }
+      if (pointer && matchMedia("(hover:hover)").matches)
+        setLens(locateLens(imageRef.current, pointer.x, pointer.y));
     });
     return () => cancelAnimationFrame(frame);
   }, [src]);
-
-  function updatePosition(e: React.MouseEvent<HTMLDivElement>) {
-    const bounds = e.currentTarget.getBoundingClientRect();
-    setPosition({
-      x: e.clientX - bounds.left,
-      y: e.clientY - bounds.top,
-      width: bounds.width,
-      height: bounds.height,
-    });
-  }
-
   return (
     <div
       ref={imageRef}
-      aria-label={`${alt}. ${tr("Hover over the image to inspect details.")}`}
-      onMouseEnter={(e) => {
-        updatePosition(e);
-        setIsHovering(true);
+      onPointerMove={(event) => {
+        if (event.pointerType === "mouse")
+          setLens(locateLens(imageRef.current, event.clientX, event.clientY));
       }}
-      onMouseMove={updatePosition}
-      onMouseLeave={() => setIsHovering(false)}
-      className="arm-frame relative h-[400px] cursor-zoom-in overflow-hidden border border-[#0a0908] sm:h-[520px]"
+      onPointerLeave={() => setLens(null)}
+      className="relative cursor-zoom-in overflow-hidden"
     >
-      <Image src={src} alt={alt} fill priority sizes="(max-width: 900px) 100vw, 50vw" className="object-cover" />
-      {isHovering && (
+      <ProductFrame src={src} alt={alt} variant="detail" priority />
+      {lens && (
         <div
           aria-hidden="true"
           data-testid="product-zoom-lens"
-          className="pointer-events-none absolute z-10 size-44 rounded-full border-2 border-[#b08a4a] bg-muted shadow-xl"
+          className="pointer-events-none absolute z-10 size-44 border-2 border-ring bg-muted shadow-xl"
           style={{
-            left: position.x,
-            top: position.y,
+            left: lens.left,
+            top: lens.top,
             transform: "translate(-50%, -50%)",
             backgroundImage: `url(${JSON.stringify(src)})`,
-            backgroundPosition: `${-(position.x * ZOOM_SCALE - LENS_SIZE / 2)}px ${-(position.y * ZOOM_SCALE - LENS_SIZE / 2)}px`,
+            backgroundPosition: `${lens.x}px ${lens.y}px`,
+            backgroundSize: `${lens.width}px ${lens.height}px`,
             backgroundRepeat: "no-repeat",
-            backgroundSize: `${position.width * ZOOM_SCALE}px ${position.height * ZOOM_SCALE}px`,
+            filter:
+              "sepia(.4) saturate(1.3) hue-rotate(-12deg) contrast(1.07) brightness(.93)",
           }}
         />
       )}

@@ -1,8 +1,26 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
-import { addItem, cartTotal, initialState, parseState, STORAGE_KEY, updateItem, type DemoOrder, type DemoState } from "@/lib/store";
+import {
+  addItem,
+  cartTotal,
+  initialState,
+  parseState,
+  STORAGE_KEY,
+  updateItem,
+  type DemoOrder,
+  type DemoState,
+} from "@/lib/store";
 import { rememberMousePosition } from "@/lib/pointer-position";
 import { useDemoMessage } from "./locale-provider";
 
@@ -28,8 +46,12 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    document.addEventListener("pointermove", rememberMousePosition, { passive: true });
-    document.addEventListener("pointerdown", rememberMousePosition, { passive: true });
+    document.addEventListener("pointermove", rememberMousePosition, {
+      passive: true,
+    });
+    document.addEventListener("pointerdown", rememberMousePosition, {
+      passive: true,
+    });
     return () => {
       document.removeEventListener("pointermove", rememberMousePosition);
       document.removeEventListener("pointerdown", rememberMousePosition);
@@ -55,22 +77,89 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     return next;
   }, []);
 
-  const addToCart = useCallback((variantId: string, quantity = 1) => {
-    commit((current) => addItem(current, variantId, quantity));
-    toast.success(message("addedToCart"));
-  }, [commit, message]);
-  const updateQuantity = useCallback((variantId: string, quantity: number) => commit((current) => updateItem(current, variantId, quantity)), [commit]);
-  const toggleWishlist = useCallback((slug: string) => commit((current) => ({ ...current, wishlist: current.wishlist.includes(slug) ? current.wishlist.filter((item) => item !== slug) : [...current.wishlist, slug] })), [commit]);
-  const finishOrder = useCallback((email: string, carriageCents = 0) => {
-    const current = stateRef.current;
-    const created: DemoOrder = { id: `MDV-${Date.now().toString().slice(-8)}`, createdAt: new Date().toISOString(), email, items: current.cart, totalCents: cartTotal(current) + carriageCents, status: "paid" };
-    commit((latest) => ({ ...latest, cart: [], orders: [created, ...latest.orders] }));
-    return created;
-  }, [commit]);
-  const toggleProduct = useCallback((slug: string) => commit((current) => ({ ...current, hiddenProducts: current.hiddenProducts.includes(slug) ? current.hiddenProducts.filter((item) => item !== slug) : [...current.hiddenProducts, slug] })), [commit]);
-  const reset = useCallback(() => { localStorage.removeItem(STORAGE_KEY); stateRef.current = initialState; setState(initialState); toast.success(message("demoRestored")); }, [message]);
+  const addToCart = useCallback(
+    (variantId: string, quantity = 1) => {
+      commit((current) => addItem(current, variantId, quantity));
+      toast.success(message("addedToCart"));
+    },
+    [commit, message],
+  );
+  const updateQuantity = useCallback(
+    (variantId: string, quantity: number) =>
+      commit((current) => updateItem(current, variantId, quantity)),
+    [commit],
+  );
+  const toggleWishlist = useCallback(
+    (slug: string) =>
+      commit((current) => ({
+        ...current,
+        wishlist: current.wishlist.includes(slug)
+          ? current.wishlist.filter((item) => item !== slug)
+          : [...current.wishlist, slug],
+      })),
+    [commit],
+  );
+  const finishOrder = useCallback(
+    (email: string, carriageCents = 0) => {
+      const current = stateRef.current;
+      const created: DemoOrder = {
+        id: `MMXCI–${1147 + current.orders.length}`,
+        createdAt: new Date().toISOString(),
+        email,
+        items: current.cart,
+        totalCents: cartTotal(current) + carriageCents,
+        status: "paid",
+      };
+      commit((latest) => ({
+        ...latest,
+        cart: [],
+        orders: [created, ...latest.orders],
+      }));
+      return created;
+    },
+    [commit],
+  );
+  const toggleProduct = useCallback(
+    (slug: string) =>
+      commit((current) => ({
+        ...current,
+        hiddenProducts: current.hiddenProducts.includes(slug)
+          ? current.hiddenProducts.filter((item) => item !== slug)
+          : [...current.hiddenProducts, slug],
+      })),
+    [commit],
+  );
+  const reset = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    stateRef.current = initialState;
+    setState(initialState);
+    toast.success(message("demoRestored"));
+  }, [message]);
 
-  const value = useMemo(() => ({ state, hydrated, totalCents: cartTotal(state), cartCount: state.cart.reduce((sum, item) => sum + item.quantity, 0), addToCart, updateQuantity, toggleWishlist, finishOrder, toggleProduct, reset }), [state, hydrated, addToCart, updateQuantity, toggleWishlist, finishOrder, toggleProduct, reset]);
+  const value = useMemo(
+    () => ({
+      state,
+      hydrated,
+      totalCents: cartTotal(state),
+      cartCount: state.cart.reduce((sum, item) => sum + item.quantity, 0),
+      addToCart,
+      updateQuantity,
+      toggleWishlist,
+      finishOrder,
+      toggleProduct,
+      reset,
+    }),
+    [
+      state,
+      hydrated,
+      addToCart,
+      updateQuantity,
+      toggleWishlist,
+      finishOrder,
+      toggleProduct,
+      reset,
+    ],
+  );
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;
 }
 

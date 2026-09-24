@@ -1,19 +1,169 @@
 "use client";
 import Link from "next/link";
-import { findVariant } from "@/lib/catalog";
-import { localizedGood } from "@/lib/armory";
+import { useEffect, useState } from "react";
+import { carriageOptions, readCheckout } from "@/lib/checkout";
+import { findRecord, findVariant } from "@/lib/catalog";
 import { useDemo } from "./demo-provider";
-import { useArmory, Mark, PageHead, Parchment, ProductFrame } from "./armory-primitives";
+import { useI18n } from "./locale-provider";
+import { Heading, Mark, ProductFrame, Rivets } from "./armory";
+export function CartEmpty() {
+  const { copy } = useI18n();
+  return (
+    <div className="empty-panel">
+      <Mark name="scroll" tone="bone" size={40} />
+      <h2>{copy.emptyCart}</h2>
+      <Link className="forged" href="/catalog">
+        {copy.seeTheWares}
+      </Link>
+    </div>
+  );
+}
+export function Totals({ carriage = 0 }: { carriage?: number }) {
+  const { copy, formatMoney } = useI18n();
+  const { totalCents } = useDemo();
+  return (
+    <div className="totals">
+      <div>
+        <span>{copy.sumOfWares}</span>
+        <span>{formatMoney(totalCents)}</span>
+      </div>
+      <div>
+        <span>{copy.carriage}</span>
+        <span>{carriage ? formatMoney(carriage) : copy.byTheHouse}</span>
+      </div>
+      <div className="due">
+        <span className="caption">{copy.dueAtCounter}</span>
+        <strong>{formatMoney(totalCents + carriage)}</strong>
+      </div>
+    </div>
+  );
+}
 export function CartView() {
-  const { a, locale, tr, formatMoney } = useArmory();
-  const { state, updateQuantity, totalCents } = useDemo();
-  const lines = state.cart.flatMap(item=>{const match=findVariant(item.variantId);return match?[{item,match}]:[]});
-  return <div className="arm-wrap max-w-[1068px] py-[52px]"><PageHead title={a("cartTitle")} sub={a("cartSub")}/>
-    {!lines.length ? <div className="arm-plate py-20 text-center"><Mark name="scroll" size={40} className="mx-auto opacity-50"/><p className="arm-ui mt-5 text-[21px]">{a("emptyCart")}</p><Link className="arm-button mt-7" href="/catalog">{a("seeTheWares")}</Link></div> : <>
-      <Parchment className="p-6 sm:p-10"><div className="arm-ui flex flex-wrap items-center justify-between gap-4 border-b-2 border-[#3a2c186b] pb-5"><h2 className="arm-display flex items-center gap-3 text-[30px]"><Mark name="scroll" tone="ink" size={26}/>{a("manifestHead")}</h2><span className="text-[13px] uppercase tracking-widest text-[#6a5638]">{a("entryNo")} MMXCI–1147</span></div>
-      <div className="arm-ui mt-5 hidden grid-cols-[70px_minmax(0,1fr)_92px_92px_118px] gap-4 text-[12px] uppercase tracking-widest text-[#6a5638] min-[900px]:grid"><span/><span>{a("colWare")}</span><span>{a("colCount")}</span><span className="text-right">{a("colEach")}</span><span className="text-right">{a("colSum")}</span></div>
-      <div>{lines.map(({item,match})=><div key={item.variantId} className="arm-ui grid gap-4 border-b border-[#3a2c1845] py-5 min-[900px]:grid-cols-[70px_minmax(0,1fr)_92px_92px_118px] min-[900px]:items-center"><Link href={`/product/${match.product.slug}`}><ProductFrame src={match.product.image} alt={tr(match.product.name)} className="h-[70px] w-[70px] border border-[#2a1f1480]"/></Link><div><Link href={`/product/${match.product.slug}`} className="text-[21px]">{tr(match.product.name)}</Link><p className="text-[13px] text-[#5c4a30]">{tr(match.product.material)}{localizedGood(locale,match.product.slug)?.origin ? ` · ${localizedGood(locale,match.product.slug)?.origin}` : ""}{match.product.variants.length>1 ? ` · ${tr(match.variant.name)}` : ""}</p><button className="mt-2 text-[13px] uppercase underline text-[#7a3034]" onClick={()=>updateQuantity(item.variantId,0)}>{a("strikeOut")}</button></div><div className="flex w-fit items-center border border-[#2a1f1466]"><button className="min-h-11 min-w-8" onClick={()=>updateQuantity(item.variantId,Math.max(1,item.quantity-1))} aria-label={tr("Decrease quantity")}>−</button><span className="min-w-7 text-center">{item.quantity}</span><button className="min-h-11 min-w-8" disabled={item.quantity>=match.variant.stock} onClick={()=>updateQuantity(item.variantId,item.quantity+1)} aria-label={tr("Increase quantity")}>+</button></div><span className="text-[16px] min-[900px]:text-right">{formatMoney(match.variant.priceCents??match.product.priceCents)}</span><strong className="text-[19px] min-[900px]:text-right">{formatMoney((match.variant.priceCents??match.product.priceCents)*item.quantity)}</strong></div>)}</div>
-      <div className="arm-ui ml-auto mt-8 max-w-[340px] space-y-3"><div className="flex justify-between"><span>{a("sumOfWares")}</span><span>{formatMoney(totalCents)}</span></div><div className="flex justify-between"><span>{a("carriage")}</span><span>{a("byTheHouse")}</span></div><div className="border-t border-[#3a2c1866] pt-3 flex items-end justify-between"><span className="text-[12px] uppercase tracking-widest">{a("dueAtCounter")}</span><strong className="text-[30px]">{formatMoney(totalCents)}</strong></div></div><p className="mt-7 max-w-[56ch] text-[14px] italic leading-6 text-[#5c4a30]">{a("manifestNote")}</p></Parchment>
-      <div className="mt-8 flex flex-wrap items-center gap-6"><Link href="/checkout" className="arm-button">{a("toTheLedger")} →</Link><Link href="/catalog" className="arm-link">← {a("keepLooking")}</Link></div>
-    </>}</div>;
+  const { copy, language, tr, formatMoney } = useI18n();
+  const { state, hydrated, updateQuantity } = useDemo();
+  const [carriage, setCarriage] = useState(900);
+  /* eslint-disable react-hooks/set-state-in-effect -- restore the session's shipping selection after hydration */
+  useEffect(() => {
+    setCarriage(
+      (
+        carriageOptions.find(
+          (option) => option.key === readCheckout().carriage,
+        ) ?? carriageOptions[0]
+      ).cents,
+    );
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+  return (
+    <div className="armory-shell cart-page">
+      <Heading title={copy.cartTitle} subtitle={copy.cartSub} />
+      {!hydrated ? (
+        <p role="status">{tr("Loading…")}</p>
+      ) : !state.cart.length ? (
+        <CartEmpty />
+      ) : (
+        <>
+          <section className="parchment manifest">
+            <Rivets />
+            <div className="manifest-head">
+              <h2>
+                <Mark name="scroll" tone="ink" size={26} />
+                {copy.manifestHead}
+              </h2>
+              <span className="caption">
+                {copy.entryNo} · MMXCI–{1147 + state.orders.length}
+              </span>
+            </div>
+            <div className="manifest-row manifest-columns" aria-hidden="true">
+              <span>{copy.colWare}</span>
+              <span>{copy.colCount}</span>
+              <span>{copy.colEach}</span>
+              <span>{copy.colSum}</span>
+            </div>
+            {state.cart.map((item) => {
+              const match = findVariant(item.variantId);
+              if (!match) return null;
+              const { product, variant } = match;
+              const info = findRecord(product.slug)?.[language];
+              const price = variant.priceCents ?? product.priceCents;
+              return (
+                <article className="manifest-row" key={item.variantId}>
+                  <Link
+                    href={`/product/${product.slug}`}
+                    aria-label={info?.name ?? tr(product.name)}
+                  >
+                    <ProductFrame src={product.image} alt="" variant="small" />
+                  </Link>
+                  <div>
+                    <Link
+                      className="manifest-name"
+                      href={`/product/${product.slug}`}
+                    >
+                      {info?.name ?? tr(product.name)}
+                    </Link>
+                    <p className="manifest-meta">
+                      {info?.material ?? tr(product.material)}
+                      {info && ` · ${info.origin}`}
+                      {product.variants.length > 1 && ` · ${tr(variant.name)}`}
+                    </p>
+                    <button
+                      className="strike-out"
+                      onClick={() => updateQuantity(item.variantId, 0)}
+                    >
+                      {copy.strikeOut}
+                    </button>
+                  </div>
+                  <div className="line-quantity">
+                    <span className="mobile-label">{copy.colCount}</span>
+                    <div
+                      className="stepper"
+                      role="group"
+                      aria-label={`${copy.colCount}: ${info?.name ?? product.name}`}
+                    >
+                      <button
+                        aria-label={tr("Decrease quantity")}
+                        disabled={item.quantity <= 1}
+                        onClick={() =>
+                          updateQuantity(item.variantId, item.quantity - 1)
+                        }
+                      >
+                        −
+                      </button>
+                      <output>{item.quantity}</output>
+                      <button
+                        aria-label={tr("Increase quantity")}
+                        disabled={item.quantity >= variant.stock}
+                        onClick={() =>
+                          updateQuantity(item.variantId, item.quantity + 1)
+                        }
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <p className="line-each">
+                    <span className="mobile-label">{copy.colEach}</span>
+                    {formatMoney(price)}
+                  </p>
+                  <p className="line-sum">
+                    <span className="mobile-label">{copy.colSum}</span>
+                    {formatMoney(price * item.quantity)}
+                  </p>
+                </article>
+              );
+            })}
+            <Totals carriage={carriage} />
+            <p className="manifest-note">{copy.manifestNote}</p>
+          </section>
+          <div className="action-row">
+            <Link href="/checkout" className="forged">
+              {copy.toTheLedger}
+            </Link>
+            <Link href="/catalog" className="text-action">
+              ← {copy.keepLooking}
+            </Link>
+          </div>
+        </>
+      )}
+    </div>
+  );
 }

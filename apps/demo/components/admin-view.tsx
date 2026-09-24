@@ -1,16 +1,164 @@
 "use client";
 import Link from "next/link";
-import { products } from "@/lib/catalog";
-import { goodFor, localizedDept } from "@/lib/armory";
+import {
+  products,
+  findRecord,
+  findVariant,
+  departments,
+  artifactRecords,
+} from "@/lib/catalog";
 import { useDemo } from "./demo-provider";
-import { useArmory, Mark, PageHead } from "./armory-primitives";
+import { useI18n } from "./locale-provider";
+import { Heading, Mark } from "./armory";
 export function AdminView() {
-  const { a, locale, tr, formatMoney } = useArmory();
-  const { state, toggleProduct, reset } = useDemo();
-  const visible = products.filter(product=>!state.hiddenProducts.includes(product.slug));
-  const stats = [{label:a("statWares"),value:visible.length,mark:"broadsword"},{label:a("statStock"),value:visible.reduce((n,p)=>n+p.variants.reduce((m,v)=>m+v.stock,0),0),mark:"coins"},{label:a("statLow"),value:visible.filter(p=>p.variants.some(v=>v.stock<=4)).length,mark:"flame"},{label:a("statValue"),value:formatMoney(visible.reduce((n,p)=>n+p.variants.reduce((m,v)=>m+v.stock*(v.priceCents??p.priceCents),0),0)),mark:"seal"}];
-  return <div className="arm-wrap py-14"><div className="flex flex-wrap items-end justify-between gap-4"><PageHead title={a("adminTitle")} sub={a("adminSub")}/><button className="arm-button mb-9" onClick={reset}>{tr("Restore defaults")}</button></div><div className="grid gap-4 sm:grid-cols-2 min-[1200px]:grid-cols-4">{stats.map(stat=><div key={stat.label} className="arm-plate p-5"><p className="arm-ui flex items-center gap-2 text-[12px] uppercase tracking-widest text-[#9a8b6a]"><Mark name={stat.mark} size={17}/>{stat.label}</p><p className="arm-display mt-3 text-[36px]">{stat.value}</p></div>)}</div>
-    <div className="arm-plate mt-9 overflow-x-auto"><div className="arm-ui hidden grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)_92px_118px_150px_70px] gap-4 border-b border-[#e9dfc41f] px-6 py-4 text-[12px] uppercase tracking-widest text-[#8e7f5f] min-[900px]:grid"><span>{a("colWare")}</span><span>{a("colDept")}</span><span className="text-right">{a("colStock")}</span><span className="text-right">{a("colEach")}</span><span className="text-right">{a("colState")}</span><span/></div>{products.map(product=>{const hidden=state.hiddenProducts.includes(product.slug), reserved=state.cart.some(item=>product.variants.some(v=>v.id===item.variantId)), low=product.variants.some(v=>v.stock<=4), good=goodFor(product.slug);return <div key={product.slug} className="arm-ui grid gap-3 border-b border-[#e9dfc412] px-6 py-4 text-[16px] min-[900px]:grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)_92px_118px_150px_70px] min-[900px]:items-center"><Link href={`/product/${product.slug}`} className="flex items-center gap-2 text-[18px]"><Mark name={good?.dept==="bulwark"?"shield":good?.dept==="alchemist"?"potion":good?.dept==="wayfarer"?"cloak":good?.dept==="relics"?"rune":"broadsword"} size={17}/>{tr(product.name)}</Link><span className="text-[#a99a78]">{good ? localizedDept(locale,good.dept)?.name : tr(product.category)}</span><span className="min-[900px]:text-right">{product.variants.reduce((n,v)=>n+v.stock,0)}</span><span className="text-[#cbb98f] min-[900px]:text-right">{formatMoney(product.priceCents)}</span><span className={`w-fit px-3 py-1 text-[13px] uppercase min-[900px]:ml-auto ${reserved?"border border-[#6e2327] bg-[#6e23274d] text-[#e8b9bb]":low?"border border-[#6e5b32] bg-[#b08a4a29] text-[#dcc08a]":"border border-[#e9dfc424] bg-[#e9dfc40d] text-[#a99a78]"}`}>{reserved?a("stateSpoken"):low?a("stateLow"):a("stateOnFloor")}</span><button className="min-h-11 text-[13px] underline text-[#9a8b6a]" onClick={()=>toggleProduct(product.slug)} aria-label={`${tr(hidden?"Show":"Hide")} ${tr(product.name)}`}>{tr(hidden?"Show":"Hide")}</button></div>})}</div>
-    <section className="arm-plate mt-9 p-6"><h2 className="arm-title text-[30px]">{tr("Recent demo orders")}</h2>{state.orders.length?<div className="mt-4 space-y-2">{state.orders.slice(0,5).map(order=><p key={order.id} className="arm-ui border-b border-[#e9dfc41a] py-2">{order.id} · {formatMoney(order.totalCents)}</p>)}</div>:<p className="arm-muted mt-3">{tr("Complete the checkout simulation to populate this panel.")}</p>}<p className="arm-muted mt-6 text-[14px]">{tr("The real database, authentication, payments, email, storage and audit implementation remain in")} <code>apps/web</code>. {tr("This portfolio app does not import them.")}</p></section>
-  </div>;
+  const { copy, language, tr, formatMoney } = useI18n();
+  const { state, toggleProduct, reset, hydrated } = useDemo();
+  const ordered = [...products].sort(
+    (a, b) =>
+      artifactRecords.findIndex((r) => r.slug === a.slug) -
+      artifactRecords.findIndex((r) => r.slug === b.slug),
+  );
+  const onFloor = ordered.filter(
+    (product) => !state.hiddenProducts.includes(product.slug),
+  );
+  const stockOf = (product: (typeof products)[number]) =>
+    product.variants.reduce((sum, variant) => sum + variant.stock, 0);
+  const metrics = [
+    { label: copy.statWares, value: onFloor.length, mark: "knot" },
+    {
+      label: copy.statStock,
+      value: onFloor.reduce((sum, p) => sum + stockOf(p), 0),
+      mark: "anvil",
+    },
+    {
+      label: copy.statLow,
+      value: onFloor.filter((p) => stockOf(p) <= 4).length,
+      mark: "flame",
+    },
+    {
+      label: copy.statValue,
+      value: formatMoney(
+        onFloor.reduce(
+          (sum, p) =>
+            sum +
+            p.variants.reduce(
+              (n, v) => n + (v.priceCents ?? p.priceCents) * v.stock,
+              0,
+            ),
+          0,
+        ),
+      ),
+      mark: "coins",
+    },
+  ];
+  return (
+    <div className="armory-shell armory-page admin-page">
+      <Heading title={copy.adminTitle} subtitle={copy.adminSub} mark="coins" />
+      <div className="stat-grid">
+        {metrics.map((metric) => (
+          <div className="plate stat-plate" key={metric.label}>
+            <div className="stat-label caption">
+              <Mark name={metric.mark} tone="bone" size={17} />
+              {metric.label}
+            </div>
+            <p className="stat-value">{metric.value}</p>
+          </div>
+        ))}
+      </div>
+      <div className="plate">
+        <table className="ledger-table">
+          <caption className="sr-only">{copy.adminTitle}</caption>
+          <thead>
+            <tr>
+              {[
+                copy.colWare,
+                copy.colDept,
+                copy.colStock,
+                copy.colEach,
+                copy.colState,
+              ].map((label) => (
+                <th key={label} scope="col">
+                  {label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {onFloor.map((product) => {
+              const record = findRecord(product.slug);
+              const dept = departments.find((d) => d.slug === record?.dept);
+              const spoken = state.cart.some(
+                (item) =>
+                  findVariant(item.variantId)?.product.slug === product.slug,
+              );
+              const low = stockOf(product) <= 4;
+              return (
+                <tr key={product.slug}>
+                  <td data-label={copy.colWare}>
+                    <Link href={`/product/${product.slug}`}>
+                      <Mark name={dept?.mark ?? "knot"} tone="bone" size={17} />
+                      {record?.[language].name ?? tr(product.name)}
+                    </Link>
+                  </td>
+                  <td data-label={copy.colDept}>{dept?.[language].name}</td>
+                  <td data-label={copy.colStock}>{stockOf(product)}</td>
+                  <td data-label={copy.colEach}>
+                    {formatMoney(product.priceCents)}
+                  </td>
+                  <td data-label={copy.colState}>
+                    <span
+                      className={`state-chip ${spoken ? "state-spoken" : low ? "state-low" : ""}`}
+                    >
+                      {spoken
+                        ? copy.stateSpoken
+                        : low
+                          ? copy.stateLow
+                          : copy.stateOnFloor}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <details className="plate admin-tools">
+        <summary>{tr("Catalog visibility")}</summary>
+        <div className="action-row">
+          {ordered.map((product) => (
+            <button
+              key={product.slug}
+              className="filter-plate"
+              disabled={!hydrated}
+              aria-pressed={!state.hiddenProducts.includes(product.slug)}
+              onClick={() => toggleProduct(product.slug)}
+            >
+              {findRecord(product.slug)?.[language].name ?? tr(product.name)} ·{" "}
+              {tr(
+                state.hiddenProducts.includes(product.slug)
+                  ? "Hidden"
+                  : "Visible",
+              )}
+            </button>
+          ))}
+        </div>
+      </details>
+      <details className="plate admin-tools">
+        <summary>{tr("Recent demo orders")}</summary>
+        {state.orders.map((order) => (
+          <p key={order.id}>
+            <Link
+              className="text-action"
+              href={`/order/confirmation?id=${encodeURIComponent(order.id)}`}
+            >
+              {order.id} · {formatMoney(order.totalCents)}
+            </Link>
+          </p>
+        ))}
+        <button className="text-action" onClick={reset} disabled={!hydrated}>
+          {tr("Restore defaults")}
+        </button>
+      </details>
+    </div>
+  );
 }

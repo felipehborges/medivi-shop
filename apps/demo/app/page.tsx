@@ -1,24 +1,141 @@
 "use client";
 import Link from "next/link";
-import { products } from "@/lib/catalog";
-import { COPY, DEPTS, GOODS, localizedDept } from "@/lib/armory";
-import { useDemo } from "@/components/demo-provider";
-import { useArmory, Mark, ProductFrame } from "@/components/armory-primitives";
+import {
+  artifactRecords,
+  departments,
+  products,
+  rarityLabels,
+} from "@/lib/catalog";
 import { ProductCard } from "@/components/product-card";
+import { DemoNotice } from "@/components/site-header";
+import { Mark, ProductFrame, SectionHeading } from "@/components/armory";
+import { useI18n } from "@/components/locale-provider";
+import { useDemo } from "@/components/demo-provider";
 export default function Home() {
-  const { a, locale, formatMoney, tr } = useArmory();
+  const { copy, language, formatMoney } = useI18n();
   const { state } = useDemo();
-  const featured = GOODS.slice(0,5).flatMap(good => { const product = products.find(item => item.slug === good.slug); return product && !state.hiddenProducts.includes(product.slug) ? [product] : []; });
-  const hero = products[0]!;
-  const words = COPY[locale === "en" ? "en" : "pt"].merchantWord;
-  return <>
-    <section className="arm-hero overflow-hidden"><div className="arm-wrap grid min-h-[660px] items-center gap-10 py-[78px] min-[1200px]:grid-cols-[1.04fr_.96fr]">
-      <div className="max-[1199px]:order-2"><h1 className="arm-display text-[60px] leading-[.86] tracking-[.02em] text-[#efe6cc] sm:text-[92px]">Medivi</h1><div className="arm-ui mt-5 flex items-center gap-3 text-[15px] uppercase tracking-[.2em] text-[#c9a257]"><span className="arm-rule w-14"/><Mark name="anvil" tone="bronze" size={20}/>{a("house")}</div><p className="arm-ui mt-9 max-w-[19ch] text-[32px] font-light leading-[1.16] text-[#e9dfc4] sm:text-[38px]">{a("heroLine1")}<br/><em className="text-[#cbb98f]">{a("heroLine2")}</em></p><div className="mt-10 flex flex-wrap items-center gap-6"><Link href="/catalog" className="arm-button">{a("enterArmory")} →</Link><Link href="#floor" className="arm-link">{a("seeTheWares")} →</Link></div><div className="arm-ui mt-14 flex flex-wrap gap-x-4 gap-y-2 text-[14px] text-[#9a8b6a]"><span>{a("guildLine")}</span><span>◆</span><span>{a("estLine")}</span><span>◆</span><span>{a("placeLine")}</span></div></div>
-      <div className="arm-hero-product relative mx-auto w-full max-w-[480px] max-[1199px]:order-1" data-reveal="mask"><ProductFrame src={hero.image} alt={tr(hero.name)} priority className="aspect-square"/><div className="arm-hero-caption arm-ui"><strong className="block text-[19px]">{tr(hero.name)}</strong><span className="mt-1 block text-[15px] text-[#cbb98f]">{formatMoney(hero.priceCents)}</span></div></div>
-    </div></section>
-    <section className="border-y border-[#0a0908] bg-[linear-gradient(#32251a,#241a12)]"><div className="arm-wrap grid gap-7 py-6 md:grid-cols-3">{words.map((word,i)=><div key={word.title} className="flex gap-4"><Mark name={["seal","anvil","scroll"][i]!} tone="bronze" size={26}/><div><h2 className="arm-ui text-[18px]">{word.title}</h2><p className="mt-1 text-[14px] leading-6 text-[#b7a67d]">{word.text}</p></div></div>)}</div></section>
-    <section id="departments" className="arm-wrap scroll-mt-24 pt-[86px] pb-10"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="arm-eyebrow">{a("departmentsEyebrow")}</p><h2 className="arm-title mt-2 text-[46px]">{a("departmentsHead")}</h2></div><p className="max-w-[34ch] italic leading-7 text-[#b7a67d]">{a("departmentsNote")}</p></div><div className="mt-9 grid gap-[18px] min-[900px]:grid-cols-2 min-[1200px]:grid-cols-3">{DEPTS.map(dept=><Link key={dept.slug} href={`/catalog?dept=${dept.slug}`} className="arm-plate flex gap-4 p-5 hover:bg-[#2e2318]"><Mark name={dept.mark} size={34}/><div><h3 className="arm-ui text-[24px] leading-tight text-[#efe6cc]">{localizedDept(locale,dept.slug)?.name}</h3><p className="mt-1 text-[14px] leading-6 text-[#b7a67d]">{localizedDept(locale,dept.slug)?.description}</p><span className="arm-ui mt-2 block text-[13px] uppercase text-[#9a8b6a]">{products.filter(product=>!state.hiddenProducts.includes(product.slug) && (dept.slug==="armory" ? product.category==="swords" : dept.slug==="bulwark" ? ["armor","shields"].includes(product.category) : dept.slug==="wayfarer" ? product.category==="cloaks" : dept.slug==="alchemist" ? product.category==="potions" : product.category==="relics")).length} {a("wares")}</span></div></Link>)}</div></section>
-    <section id="floor" className="arm-wrap scroll-mt-24 pt-[60px] pb-5"><div className="mb-9 flex items-center gap-5"><h2 className="arm-title whitespace-nowrap text-[42px]">{a("floorHead")}</h2><span className="arm-rule flex-1" data-reveal="rule"/><Mark name="knot" tone="bronze" size={22}/></div><div className="arm-floor">{featured.map((product,i)=><ProductCard key={product.slug} product={product} tall={i<2}/>)}</div></section>
-    <section className="arm-wrap py-[80px]"><div className="arm-parchment relative mx-auto max-w-[760px] rotate-[-.45deg] px-8 py-9 sm:px-10"><Mark name="scroll" tone="ink" size={34}/><h2 className="arm-ui mt-3 text-[26px]">{a("noticeHead")}</h2><p className="mt-3 text-[15px] leading-7 text-[#4a3a24]">{a("noticeText")}</p><p className="mt-4 text-[14px] italic text-[#6a5638]">{a("noticeSigned")}</p></div></section>
-  </>;
+  const ordered = artifactRecords.flatMap((record) => {
+    const product = products.find((item) => item.slug === record.slug);
+    return product && !state.hiddenProducts.includes(product.slug)
+      ? [product]
+      : [];
+  });
+  const hero = ordered[0];
+  const heroRecord = artifactRecords.find(
+    (record) => record.slug === hero?.slug,
+  );
+  return (
+    <>
+      <section className="hero">
+        <div className="armory-shell hero-grid">
+          <div className="hero-copy">
+            <h1>Medivi</h1>
+            <div className="hero-house">
+              <Mark name="anvil" />
+              {copy.house}
+            </div>
+            <p className="hero-statement">
+              {copy.heroLine1}
+              <br />
+              <em>{copy.heroLine2}</em>
+            </p>
+            <div className="action-row">
+              <Link className="forged" href="/catalog">
+                {copy.enterArmory}
+              </Link>
+              <Link className="text-action" href="/catalog">
+                {copy.seeTheWares} <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+            <div className="credentials">
+              <span>
+                <Mark name="seal" size={16} />
+                {copy.guildLine}
+              </span>
+              <span>{copy.estLine}</span>
+              <span>{copy.placeLine}</span>
+            </div>
+          </div>
+          {hero && (
+            <div className="hero-frame-wrap">
+              <div className="hero-frame-reveal" data-reveal="mask">
+                <ProductFrame
+                  src={hero.image}
+                  alt={heroRecord?.[language].name ?? hero.name}
+                  variant="hero"
+                  priority
+                />
+              </div>
+              <Link href={`/product/${hero.slug}`} className="price-tag">
+                <strong>{heroRecord?.[language].name ?? hero.name}</strong>
+                <p>
+                  {heroRecord && rarityLabels[language][heroRecord.rar]} ·{" "}
+                  {formatMoney(hero.priceCents)}
+                </p>
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+      <section className="merchant-band">
+        <div className="armory-shell merchant-grid">
+          {copy.merchantWord.map((word, index) => (
+            <article key={word.title}>
+              <Mark name={["seal", "anvil", "scroll"][index]!} size={26} />
+              <div>
+                <h3>{word.title}</h3>
+                <p>{word.text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section id="departments" className="armory-shell departments">
+        <div className="department-heading">
+          <div>
+            <p className="eyebrow">{copy.departmentsEyebrow}</p>
+            <h2>{copy.departmentsHead}</h2>
+          </div>
+          <p>{copy.departmentsNote}</p>
+        </div>
+        <div className="department-grid">
+          {departments.map((dept) => (
+            <Link
+              className="department-card"
+              href={`/catalog?department=${dept.slug}`}
+              key={dept.slug}
+              data-reveal="up"
+            >
+              <Mark name={dept.mark} tone="bone" size={34} />
+              <div>
+                <h3>{dept[language].name}</h3>
+                <p>{dept[language].description}</p>
+                <span className="caption">
+                  {
+                    ordered.filter(
+                      (p) =>
+                        artifactRecords.find((r) => r.slug === p.slug)?.dept ===
+                        dept.slug,
+                    ).length
+                  }{" "}
+                  {copy.wares}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+      <section className="armory-shell floor-section">
+        <SectionHeading>{copy.floorHead}</SectionHeading>
+        <div className="wares-grid">
+          {ordered.slice(0, 5).map((product) => (
+            <ProductCard product={product} key={product.slug} />
+          ))}
+        </div>
+      </section>
+      <section className="armory-shell notice-section">
+        <DemoNotice />
+      </section>
+    </>
+  );
 }

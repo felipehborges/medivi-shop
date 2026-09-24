@@ -1,34 +1,45 @@
 "use client";
-
 import Image from "next/image";
-import { useState } from "react";
-import { useI18n } from "./locale-provider";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogClose,
+} from "@medivi/ui/components/ui/dialog";
 import { ProductImageMagnifier } from "./product-image-magnifier";
-
-export function ProductImageGallery({ src, alt }: { src: string; alt: string }) {
-  const { tr } = useI18n();
-  const [selected, setSelected] = useState(0);
-  const photos = [src, src, src];
-
+import { useI18n } from "./locale-provider";
+export function ProductImageGallery({
+  src,
+  alt,
+}: {
+  src: string;
+  alt: string;
+}) {
+  const { locale } = useI18n();
   return (
-    <div>
-      <ProductImageMagnifier src={photos[selected] ?? src} alt={`${alt} — ${tr("Photo")} ${selected + 1}`} />
-      <div role="group" aria-label={tr("Product images")} className="mt-4 flex gap-3">
-        {photos.map((photo, index) => (
-          <button
-            key={index}
-            type="button"
-            aria-pressed={selected === index}
-            aria-label={`${tr("Show image")} ${index + 1} ${tr("of")} ${photos.length}`}
-            onClick={() => setSelected(index)}
-            className={`arm-frame relative size-16 shrink-0 overflow-hidden border-2 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected === index ? "border-[#b08a4a]" : "border-[#4a3b22] hover:border-[#b08a4a]"}`}
-          >
-            <Image src={photo} alt="" fill sizes="80px" className="object-cover" />
-            <span className="absolute bottom-1 right-1 bg-[#14110ecc] px-1.5 text-xs font-semibold">{index + 1}</span>
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          className="gallery-zoom"
+          aria-label={`${locale === "pt-BR" ? "Ampliar" : "Enlarge"} ${alt}`}
+        >
+          <ProductImageMagnifier src={src} alt={alt} />
+        </button>
+      </DialogTrigger>
+      <DialogContent
+        className="zoom-dialog"
+        showCloseButton={false}
+        aria-describedby={undefined}
+      >
+        <DialogTitle>{alt}</DialogTitle>
+        <Image src={src} alt={alt} width={1200} height={1200} />
+        <DialogClose asChild>
+          <button className="forged forged-small zoom-close">
+            {locale === "pt-BR" ? "Fechar" : "Close"} ×
           </button>
-        ))}
-      </div>
-      <p className="mt-2 text-xs text-muted-foreground">{tr("Photos repeat in this demo; the zoom works on every selection.")}</p>
-    </div>
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
   );
 }

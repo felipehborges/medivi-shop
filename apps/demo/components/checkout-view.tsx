@@ -1,23 +1,155 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
-import { findVariant } from "@/lib/catalog";
+import { useEffect, useState, type FormEvent } from "react";
+import { findRecord, findVariant } from "@/lib/catalog";
 import { useDemo } from "./demo-provider";
-import { useArmory, Mark, PageHead, Parchment } from "./armory-primitives";
-import type { ArmoryKey } from "@/lib/armory";
-const fields: { key: ArmoryKey; placeholder: ArmoryKey; required?: boolean }[] = [{key:"fBearer",placeholder:"fBearerP",required:true},{key:"fRoad",placeholder:"fRoadP",required:true},{key:"fTown",placeholder:"fTownP",required:true},{key:"fKingdom",placeholder:"fKingdomP",required:true},{key:"fMark",placeholder:"fMarkP"}];
-const carriage = [{id:"rider",name:"carriageRider",eta:"carriageRiderEta",mark:"shield",cost:900},{id:"caravan",name:"carriageCaravan",eta:"carriageCaravanEta",mark:"knot",cost:0},{id:"raven",name:"carriageRaven",eta:"carriageRavenEta",mark:"feather",cost:2400}] as const;
+import { useI18n } from "./locale-provider";
+import { Heading, Mark } from "./armory";
+import { CartEmpty, Totals } from "./cart-view";
+import {
+  carriageOptions,
+  emptyDraft,
+  readCheckout,
+  type CheckoutDraft,
+} from "@/lib/checkout";
 export function CheckoutView() {
-  const { a, tr, formatMoney } = useArmory();
-  const { state, totalCents } = useDemo();
+  const { copy, language, tr, formatMoney } = useI18n();
+  const { state, hydrated } = useDemo();
   const router = useRouter();
-  const [selected,setSelected] = useState("caravan");
-  const lines = state.cart.flatMap(item=>{const match=findVariant(item.variantId);return match?[{item,match}]:[]});
-  const cost = carriage.find(item=>item.id===selected)?.cost ?? 0;
-  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); sessionStorage.setItem("medivi-demo-checkout",JSON.stringify({ email:"bearer@medivi.invalid", carriage:selected, carriageCents:cost })); router.push("/payment"); }
-  return <div className="arm-wrap max-w-[1188px] py-14"><Link href="/cart" className="arm-link">← {a("backToManifest")}</Link><div className="mt-6"><PageHead title={a("checkoutTitle")} sub={a("checkoutSub")}/></div>
-    {!lines.length ? <div className="arm-plate p-12 text-center"><p>{a("emptyCart")}</p><Link href="/catalog" className="arm-button mt-5">{a("seeTheWares")}</Link></div> : <form onSubmit={submit} className="grid items-start gap-9 min-[1200px]:grid-cols-[1.25fr_.75fr]"><div className="arm-plate p-6 sm:p-8"><h2 className="arm-eyebrow flex items-center gap-3"><Mark name="feather" tone="bronze" size={20}/>{a("handOfBearer")}</h2><div className="mt-6 grid gap-[18px] min-[900px]:grid-cols-2">{fields.map((field,i)=><label key={field.key} className={`arm-ui block text-[12px] uppercase tracking-[.14em] text-[#8e7f5f] ${i<2 ? "sm:col-span-2" : ""}`}>{a(field.key)}<input className="arm-input mt-2" placeholder={a(field.placeholder)} required={field.required} autoComplete="off"/></label>)}</div><h2 className="arm-eyebrow mt-9 flex items-center gap-3"><Mark name="shield" tone="bronze" size={20}/>{a("mannerOfCarriage")}</h2><div className="mt-5 grid gap-3">{carriage.map(option=><button key={option.id} type="button" className="arm-choice" data-selected={selected===option.id} onClick={()=>setSelected(option.id)}><Mark name={option.mark} size={22}/><span className="flex-1"><strong className="arm-ui block text-[18px] text-[#e9dfc4]">{a(option.name)}</strong><span className="text-[13px] text-[#9a8b6a]">{a(option.eta)}</span></span><span className="arm-ui text-[17px] text-[#cbb98f]">{option.cost ? formatMoney(option.cost) : a("byTheHouse")}</span></button>)}</div><button type="submit" className="arm-button mt-8 w-full">{a("toTheSeal")} →</button></div>
-      <Parchment className="p-6 min-[1200px]:sticky min-[1200px]:top-28"><h2 className="arm-display flex items-center gap-2 border-b border-[#3a2c1866] pb-4 text-[25px]"><Mark name="scroll" tone="ink" size={20}/>{a("manifestHead")}</h2><div className="arm-ui mt-5 space-y-3">{lines.map(({item,match})=><div key={item.variantId} className="flex justify-between gap-3 text-[16px]"><span>{tr(match.product.name)} ×{item.quantity}</span><span>{formatMoney((match.variant.priceCents??match.product.priceCents)*item.quantity)}</span></div>)}<div className="flex justify-between border-t border-[#3a2c1866] pt-4"><span>{a("sumOfWares")}</span><span>{formatMoney(totalCents)}</span></div><div className="flex justify-between"><span>{a("carriage")}</span><span>{cost ? formatMoney(cost) : a("byTheHouse")}</span></div><div className="flex items-end justify-between border-t border-[#3a2c1866] pt-4"><span className="text-[12px] uppercase">{a("dueAtCounter")}</span><strong className="text-[26px]">{formatMoney(totalCents+cost)}</strong></div></div></Parchment></form>}
-  </div>;
+  const [draft, setDraft] = useState(emptyDraft);
+  // Browser-only form drafts are restored after the static server snapshot hydrates.
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    setDraft(readCheckout());
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+  const carriage =
+    carriageOptions.find((option) => option.key === draft.carriage) ??
+    carriageOptions[0];
+  function update(key: keyof CheckoutDraft, value: string) {
+    const next = { ...draft, [key]: value };
+    setDraft(next);
+    sessionStorage.setItem("medivi-demo-checkout", JSON.stringify(next));
+  }
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    sessionStorage.setItem("medivi-demo-checkout", JSON.stringify(draft));
+    router.push("/payment");
+  }
+  const fields = [
+    {
+      key: "bearer",
+      label: copy.fBearer,
+      placeholder: copy.fBearerP,
+      wide: true,
+    },
+    { key: "road", label: copy.fRoad, placeholder: copy.fRoadP, wide: true },
+    { key: "town", label: copy.fTown, placeholder: copy.fTownP },
+    { key: "kingdom", label: copy.fKingdom, placeholder: copy.fKingdomP },
+    { key: "mark", label: copy.fMark, placeholder: copy.fMarkP, wide: true },
+  ] as const;
+  return (
+    <div className="armory-shell armory-page checkout-page">
+      <Link href="/cart" className="back-link">
+        ← {copy.backToManifest}
+      </Link>
+      <Heading title={copy.checkoutTitle} subtitle={copy.checkoutSub} />
+      {!hydrated ? (
+        <p role="status">{tr("Loading…")}</p>
+      ) : !state.cart.length ? (
+        <CartEmpty />
+      ) : (
+        <div className="checkout-grid">
+          <form onSubmit={submit} className="plate checkout-form">
+            <fieldset className="form-section">
+              <legend className="eyebrow">
+                <Mark name="feather" />
+                {copy.handOfBearer}
+              </legend>
+              <div className="form-fields">
+                {fields.map((field) => (
+                  <div
+                    key={field.key}
+                    className={`field ${"wide" in field ? "field-wide" : ""}`}
+                  >
+                    <label htmlFor={field.key}>{field.label}</label>
+                    <input
+                      className="sunken"
+                      id={field.key}
+                      name={field.key}
+                      required={field.key !== "mark"}
+                      placeholder={field.placeholder}
+                      value={draft[field.key]}
+                      onChange={(event) =>
+                        update(field.key, event.target.value)
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset className="form-section">
+              <legend className="eyebrow">
+                <Mark name="shield" />
+                {copy.mannerOfCarriage}
+              </legend>
+              <div className="choice-list">
+                {carriageOptions.map((option) => (
+                  <label className="choice" key={option.key}>
+                    <input
+                      type="radio"
+                      name="carriage"
+                      value={option.key}
+                      checked={carriage.key === option.key}
+                      onChange={() => update("carriage", option.key)}
+                    />
+                    <Mark name={option.mark} tone="bone" size={22} />
+                    <span className="choice-text">
+                      <strong>{copy[option.name]}</strong>
+                      <small>{copy[option.eta]}</small>
+                    </span>
+                    <span className="choice-price">
+                      {option.cents
+                        ? formatMoney(option.cents)
+                        : copy.byTheHouse}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <button type="submit" className="forged w-full">
+              {copy.toTheSeal}
+            </button>
+          </form>
+          <aside className="parchment checkout-summary">
+            <h2>
+              <Mark name="scroll" tone="ink" size={18} />
+              {copy.manifestHead}
+            </h2>
+            {state.cart.map((item) => {
+              const match = findVariant(item.variantId);
+              if (!match) return null;
+              return (
+                <div className="summary-line" key={item.variantId}>
+                  <span>
+                    {findRecord(match.product.slug)?.[language].name ??
+                      tr(match.product.name)}{" "}
+                    ×{item.quantity}
+                  </span>
+                  <span>
+                    {formatMoney(
+                      (match.variant.priceCents ?? match.product.priceCents) *
+                        item.quantity,
+                    )}
+                  </span>
+                </div>
+              );
+            })}
+            <Totals carriage={carriage.cents} />
+          </aside>
+        </div>
+      )}
+    </div>
+  );
 }
