@@ -12,8 +12,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.900.0",
-    "@vercel/blob": "^2.0.0"
+    "@aws-sdk/client-s3": "^3.1138.0",
+    "@vercel/blob": "^2.8.0"
   },
   "devDependencies": {
     "@medivi/config": "workspace:*",
